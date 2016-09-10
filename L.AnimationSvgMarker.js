@@ -7,7 +7,7 @@ L.AnimationSvgMarker = L.Marker.extend({
             iconSize: [22, 35],
             iconAnchor: [12, 24],
             shadowSize: [54, 51],
-            shadowUrl: "leaflet-0.7.7-patch/images/marker-shadow.png",
+            shadowUrl: "images/marker-shadow.png",
             shadowAnchor: [18, 45],
             popupAnchor: [0, -17],
             viewBox: '0 0 32 52',
