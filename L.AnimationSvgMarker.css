@@ -1,0 +1,36 @@
+
+.markerInvisible {
+    opacity: 0;
+}
+
+.markerFadeOut {
+    -webkit-animation: fadeout 1s linear 1 forwards;
+    animation: fadeout 1s linear 1 forwards;
+}
+
+@-webkit-keyframes fadeout {
+    0%   { opacity: 1; }
+    50%  { opacity: 0.5; }
+    100% { opacity: 0; }
+}
+@keyframes fadeout {
+    0%   { opacity: 1; }
+    50%  { opacity: 0.5; }
+    100% { opacity: 0; }
+}
+
+.markerFadeIn {
+    -webkit-animation: fadein 0.5s linear 1 forwards;
+    animation: fadein 0.5s linear 1 forwards;
+}
+
+@-webkit-keyframes fadein {
+    0%   { opacity: 0; }
+    50%  { opacity: 0.5; }
+    100% { opacity: 1; }
+}
+@keyframes fadein {
+    0%   { opacity: 0; }
+    50%  { opacity: 0.5; }
+    100% { opacity: 1; }
+}
