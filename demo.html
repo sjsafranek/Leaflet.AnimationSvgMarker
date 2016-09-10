@@ -12,11 +12,10 @@
 		<script src="Leaflet.label/dist/leaflet.label.js"></script>
 		<script src="https://d3js.org/d3.v4.js"></script>
 		<style>
-			html, body {
-				height: 100%;
-				width: 100%;
-			}
 			#map {
+				position: absolute; 
+				top: 0; 
+				left: 0;
 				width: 100%;
 				height: 100%;
 			}
@@ -73,13 +72,11 @@
 				marker.moveTo(map.getCenter(), 500);
 
 				setTimeout(function(){
-					marker.updateLabel("stefan rocks");
+					// marker.updateLabel("stefan rocks");
 					marker.changeColor("purple");
 					setTimeout(function(){
-						marker.updateLabel("stefan rocks");
 						marker.changeColor("yellow");
 						setTimeout(function(){
-							marker.updateLabel("stefan rocks");
 							marker.changeColor("darkred");
 							setTimeout(function(){
 								marker.removeFadeOut();
