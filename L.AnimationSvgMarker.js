@@ -15,10 +15,11 @@ L.AnimationSvgMarker = L.Marker.extend({
         }
     },
 
-    initialize: function (latlng, timestamp, options) {
+    initialize: function (latlng, options) {
         this.path = [];
         this.timeoutLoop = null;
-        this.last_movement_timestamp = timestamp || 0;
+        this.last_movement_timestamp = options.timestamp || 0;
+        this.options.iconOptions.color = options.color || "#000000";
         this.map = null;
         this.updateIcon();
         L.Marker.prototype.initialize.call(this, latlng, options);
@@ -27,17 +28,20 @@ L.AnimationSvgMarker = L.Marker.extend({
         });
     },
 
-    moveTo: function(destination, event_timestamp) {
+    moveTo: function(destination, milliseconds, event_timestamp) {
+        if (!milliseconds) {
+            milliseconds = 1000;
+        }
         if (this.path.length == 0) {
             if (this.getLatLng().lat != destination.lat && this.getLatLng().lng != destination.lng) {
-                this.last_movement_timestamp = event_timestamp;
-                this.path.push(destination);
+                this.last_movement_timestamp = event_timestamp || this.last_movement_timestamp+1;
+                this.path.push({location:destination, duration:milliseconds});
             }
         } else {
             var l = this.path.length-1;
             if (this.path[l].lat != destination.lat && this.path[l].lng != destination.lng) {
-                this.last_movement_timestamp = event_timestamp;
-                this.path.push(destination);
+                this.last_movement_timestamp = event_timestamp || this.last_movement_timestamp+1;
+                this.path.push({location:destination, duration:milliseconds});
             }
         }
         if (!this.timeoutLoop) {
@@ -48,34 +52,30 @@ L.AnimationSvgMarker = L.Marker.extend({
     
     animate: function() {
         var self = this;
-        var icon = $(self._icon);
-        var shadow = $(self._shadow);
-        if (self.hasOwnProperty("label")) {
-            var label = $(self.label._container);
-        }
         if (self.path.length > 0) {
             var point = self.path.shift();
-            var pt1 = self.map.latLngToLayerPoint(point);
-            self._latlng = L.latLng(point);
-            icon.css("transition","transform 1.25s");
-            shadow.css("transition","transform 1.25s");
-            icon.css("transform", "translate3d(" + pt1.x + "px, " + pt1.y + "px, 0px)");
-            shadow.css("transform", "translate3d(" + pt1.x + "px, " + pt1.y + "px, 0px)");
+            var pt1 = self.map.latLngToLayerPoint(point.location);
+            self._latlng = L.latLng(point.location);
+            var seconds = point.duration/1000;
+            self._icon.style.transition = "transform "+seconds+"s";
+            self._shadow.style.transition = "transform "+seconds+"s";
+            self._icon.style.transform = "translate3d(" + pt1.x + "px, " + pt1.y + "px, 0px)";
+            self._shadow.style.transform = "translate3d(" + pt1.x + "px, " + pt1.y + "px, 0px)";
             if (self.hasOwnProperty("label")) {
-                self.label._latlng = L.latLng(point);
-                label.css("transition","transform 1.25s");
-                label.css("transform", "translate3d(" + (pt1.x+21) + "px, " + (pt1.y-35) + "px, 0px)");
+                self.label._latlng = L.latLng(point.location);
+                self.label._container.style.transition = "transform "+seconds+"s";
+                self.label._container.style.transform = "translate3d(" + (pt1.x+21) + "px, " + (pt1.y-35) + "px, 0px)";
             }
             self.timeoutLoop = setTimeout(function(){
-                icon.css("transition","transform 0s");
-                shadow.css("transition","transform 0s");
+                self._icon.style.transition = "transform 0s";
+                self._shadow.style.transition = "transform 0s";
                 if (self.hasOwnProperty("label")) {
-                    label.css("transition","transform 0s");
+                    self.label._container.style.transition = "transform 0s";
                 }
                 window.clearTimeout(self.timeoutLoop);
                 self.timeoutLoop = null;
                 self.animate();
-            }, 1250);
+            }, point.duration);
         }
         else {
             // if ($("#timecontrol-slider").slider("option", "value") - self.last_movement_timestamp > self.time_animation_treshold) {
@@ -90,12 +90,22 @@ L.AnimationSvgMarker = L.Marker.extend({
     },
 
     updateLabel: function(text) {
+        var self = this;
         if (!this.hasOwnProperty("label")) {
             this.bindLabel(text, { noHide: true });
             this.showLabel();
         } else {
             this.label.setContent(""+text);
+            this.showLabel();
         }
+        // this.label._container.classList.add("markerInvisible");
+        // this.label._container.classList.add("markerFadeIn");
+        // this.label._container.classList.remove("markerInvisible");
+        // setTimeout(function(){
+        //     if (self.hasOwnProperty("label")) {
+        //         self.label._container.classList.remove("markerFadeIn");
+        //     }
+        // },500);
     },
 
     // popup
@@ -132,53 +142,78 @@ L.AnimationSvgMarker = L.Marker.extend({
         this.bindPopup(this.getPopupHtml());
     },
 
-    changeColor: function(color) {
-        this.options.iconOptions.color = color;
-        this.updateIcon();
-    },
-
-    removeFadeOut: function() {
+    changeColor: function(color, duration) {
         var self = this;
-        $(self._icon).addClass("markerFadeOut");
-        $(self._shadow).addClass("markerFadeOut");
-        if (self.hasOwnProperty("label")) {
-            $(self.label._container).addClass("markerFadeOut");
+        if (d3) {
+            var step = duration || 1000;
+            step = step/10;
+            var color_scale;
+            if ("4" == d3.version[0]){
+                color_scale = d3.scaleLinear()
+                    .domain([0, 9])
+                    .range([this.options.iconOptions.color, color]);   
+            } else if ("3" == d3.version[0]) {
+                color_scale = d3.scale.linear()
+                    .domain([0, 9])
+                    .range([this.options.iconOptions.color, color]);
+            }
+            function update(n) {
+                setTimeout(function(){
+                    if (n<10) {
+                        self.options.iconOptions.color = color_scale(n);
+                        self.updateIcon(); 
+                        update(n+1);
+                    }             
+                }, step);
+            }
+            update(1);
+        } else {
+            this.options.iconOptions.color = color;
+            this.updateIcon();
         }
-        setTimeout(function(){
-            if (self._map) {
-                self._map.removeLayer(self);
-            }
-            $(self._icon).removeClass("markerFadeOut");
-            $(self._shadow).removeClass("markerFadeOut");
-            if (self.hasOwnProperty("label")) {
-                self.hideLabel();
-                $(self.label._container).removeClass("markerFadeOut");
-            }
-        },1000);
     },
 
     addToFadeIn: function(map) {
         var self = this;
-        $(self._icon).addClass(".markerInvisible");
-        $(self._shadow).addClass(".markerInvisible");
         self.addTo(map);
         self.map = map;
-        $(self._icon).addClass("markerFadeIn");
-        $(self._shadow).addClass("markerFadeIn");
-        $(self._icon).removeClass(".markerInvisible");
-        $(self._shadow).removeClass(".markerInvisible");
+        if (self.hasOwnProperty("label")) {
+            self.hideLabel();
+        }
+        self._icon.classList.add("markerInvisible");
+        self._shadow.classList.add("markerInvisible");
+        self._icon.classList.add("markerFadeIn");
+        self._shadow.classList.add("markerFadeIn");
+        self._icon.classList.remove("markerInvisible");
+        self._shadow.classList.remove("markerInvisible");
         setTimeout(function(){
-            $(self._icon).removeClass("markerFadeIn");
-            $(self._shadow).removeClass("markerFadeIn");
+            self._icon.classList.remove("markerFadeIn");
+            self._shadow.classList.remove("markerFadeIn");
         },500);
     },
 
+    removeFadeOut: function() {
+        var self = this;
+        self._icon.classList.add("markerFadeOut");
+        self._shadow.classList.add("markerFadeOut");
+        if (self.hasOwnProperty("label")) {
+            self.label._container.classList.add("markerFadeOut");
+        }
+        setTimeout(function(){
+            self._icon.classList.remove("markerFadeOut");
+            self._shadow.classList.remove("markerFadeOut");
+            if (self._map) {
+                self._map.removeLayer(self);
+            }
+            if (self.hasOwnProperty("label")) {
+                self.hideLabel();
+                self.label._container.classList.remove("markerFadeOut");
+            }
+        },1000);
+    },
+
     utils: {
-        /**
-         * @method: convertTime
-         * @arg timestamp {int}: unix timestamp (seconds)
-         * @return Local timestamp
-         */
+
         convertTime: function(timestamp) {
             var TIME = new Date( timestamp * 1000 );
             // Left pad w/ 0's
@@ -191,11 +226,6 @@ L.AnimationSvgMarker = L.Marker.extend({
             return d;
         },
 
-        /**
-         * @method: convertTimeUTC
-         * @arg timestamp {int}: unix timestamp (seconds)
-         * @return UTC timestamp
-         */
         convertTimeUTC: function(timestamp) {
             var TIME = new Date( timestamp * 1000 );
             // Left pad w/ 0's
@@ -207,6 +237,7 @@ L.AnimationSvgMarker = L.Marker.extend({
                   + ("0" + TIME.getUTCSeconds()).slice(-2);
             return d;
         }
+
     }
 
 
@@ -216,4 +247,5 @@ L.AnimationSvgMarker = L.Marker.extend({
 L.animationsvgmarker = function(latlng, timestamp) {
     return new L.AnimationSvgMarker(latlng, timestamp);
 };
+
 

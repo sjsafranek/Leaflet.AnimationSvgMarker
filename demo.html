@@ -10,7 +10,7 @@
 		<!-- Leaflet Labels -->
 		<link href="Leaflet.label/dist/leaflet.label.css" rel="stylesheet" />
 		<script src="Leaflet.label/dist/leaflet.label.js"></script>
-		<script src='jquery_v2.2.1.js'></script>
+		<script src="https://d3js.org/d3.v4.js"></script>
 		<style>
 			html, body {
 				height: 100%;
@@ -29,7 +29,7 @@
 		<link rel="stylesheet" href='L.AnimationSvgMarker.css' />		
 		<script src='L.AnimationSvgMarker.js'></script>
 		<script>
-			var map;
+			var map, marker;
 
 			document.addEventListener('DOMContentLoaded', function() {
 			   init();
@@ -60,6 +60,33 @@
 						defaultLayer
 					]
 				}).setView([0,0], 2)
+
+				marker = L.animationsvgmarker(map.getCenter(), {
+					timestamp: new Date().getTime()
+				});
+				marker.addToFadeIn(map);
+
+				marker.moveTo(L.latLng(20, 20), 1000, new Date().getTime());
+				marker.moveTo(L.latLng(-20, 40), 2000, new Date().getTime());
+				marker.moveTo(L.latLng(30, -30), 5000, new Date().getTime());
+				marker.moveTo(L.latLng(-15, -10), 2000, new Date().getTime());
+				marker.moveTo(map.getCenter(), 500);
+
+				setTimeout(function(){
+					marker.updateLabel("stefan rocks");
+					marker.changeColor("purple");
+					setTimeout(function(){
+						marker.updateLabel("stefan rocks");
+						marker.changeColor("yellow");
+						setTimeout(function(){
+							marker.updateLabel("stefan rocks");
+							marker.changeColor("darkred");
+							setTimeout(function(){
+								marker.removeFadeOut();
+							}, 3000);
+						}, 3000);
+					}, 3000);
+				}, 3000);
 
 			}
 
