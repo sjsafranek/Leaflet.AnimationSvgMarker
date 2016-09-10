@@ -8,7 +8,8 @@ L.AnimationSvgMarker = L.Marker.extend({
             iconAnchor: [12, 24],
             shadowSize: [54, 51],
             shadowUrl: "images/marker-shadow.png",
-            shadowAnchor: [18, 45],
+            // shadowAnchor: [18, 45],
+            shadowAnchor: [18, 46],
             popupAnchor: [0, -17],
             viewBox: '0 0 32 52',
             color: "#000000"
