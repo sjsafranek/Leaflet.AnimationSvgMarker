@@ -173,8 +173,9 @@ L.AnimationSvgMarker = L.Marker.extend({
         }
     },
 
-    addToFadeIn: function(map) {
+    addToFadeIn: function(map, milliseconds) {
         var self = this;
+        var duration = milliseconds || 500;
         self.addTo(map);
         self.map = map;
         if (self.hasOwnProperty("label")) {
@@ -189,10 +190,11 @@ L.AnimationSvgMarker = L.Marker.extend({
         setTimeout(function(){
             self._icon.classList.remove("markerFadeIn");
             self._shadow.classList.remove("markerFadeIn");
-        },500);
+        }, duration);
     },
 
-    removeFadeOut: function() {
+    removeFadeOut: function(milliseconds) {
+        var duration = milliseconds || 1000;
         var self = this;
         self._icon.classList.add("markerFadeOut");
         self._shadow.classList.add("markerFadeOut");
@@ -209,7 +211,7 @@ L.AnimationSvgMarker = L.Marker.extend({
                 self.hideLabel();
                 self.label._container.classList.remove("markerFadeOut");
             }
-        },1000);
+        }, duration);
     },
 
     utils: {

@@ -24,94 +24,68 @@
 	<body>
 		<div id="map"></div>
 	</body>
+	<link rel="stylesheet" href='L.AnimationSvgMarker.css' />		
+	<script src='L.AnimationSvgMarker.js'></script>
+	<script>
+		var map, marker;
 
-		<link rel="stylesheet" href='L.AnimationSvgMarker.css' />		
-		<script src='L.AnimationSvgMarker.js'></script>
-		<script>
-			var map, marker;
+		document.addEventListener('DOMContentLoaded', function() {
+		   init();
+		});
 
-			document.addEventListener('DOMContentLoaded', function() {
-			   init();
+		function init() {
+
+			var defaultLayer =  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+				attribution: '&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors',
+				reuseTiles: true
 			});
 
-			function init() {
-
-				var defaultLayer =  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+			var baseLayers = { 
+				"OpenStreetMap": L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
 					attribution: '&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors',
 					reuseTiles: true
-				});
+				}),
+				"Esri_DarkGrey": L.tileLayer('https://services.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Base/MapServer/tile/{z}/{y}/{x}', {
+					attribution: 'Esri, HERE, DeLorme, MapmyIndia, © OpenStreetMap contributors, and the GIS user community',
+					reuseTiles: true,
+					maxZoom: 16
+				})
+			}
 
-				var baseLayers = { 
-					"OpenStreetMap": L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-						attribution: '&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors',
-						reuseTiles: true
-					}),
-					"Esri_DarkGrey": L.tileLayer('https://services.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Base/MapServer/tile/{z}/{y}/{x}', {
-						attribution: 'Esri, HERE, DeLorme, MapmyIndia, © OpenStreetMap contributors, and the GIS user community',
-						reuseTiles: true,
-						maxZoom: 16
-					})
-				}
+			map = L.map('map',{
+				maxZoom:20,
+				layers: [
+					defaultLayer
+				]
+			}).setView([0,0], 2)
 
-				map = L.map('map',{
-					maxZoom:20,
-					layers: [
-						defaultLayer
-					]
-				}).setView([0,0], 2)
+			marker = L.animationsvgmarker(map.getCenter(), {
+				timestamp: new Date().getTime()
+			});
+			marker.addToFadeIn(map);
 
-				marker = L.animationsvgmarker(map.getCenter(), {
-					timestamp: new Date().getTime()
-				});
-				marker.addToFadeIn(map);
+			marker.moveTo(L.latLng(20, 20), 1000, new Date().getTime());
+			marker.moveTo(L.latLng(-20, 40), 2000, new Date().getTime());
+			marker.moveTo(L.latLng(30, -30), 5000, new Date().getTime());
+			marker.moveTo(L.latLng(-15, -10), 2000, new Date().getTime());
+			marker.moveTo(map.getCenter(), 500);
 
-				marker.moveTo(L.latLng(20, 20), 1000, new Date().getTime());
-				marker.moveTo(L.latLng(-20, 40), 2000, new Date().getTime());
-				marker.moveTo(L.latLng(30, -30), 5000, new Date().getTime());
-				marker.moveTo(L.latLng(-15, -10), 2000, new Date().getTime());
-				marker.moveTo(map.getCenter(), 500);
-
+			setTimeout(function(){
+				// marker.updateLabel("stefan rocks");
+				marker.changeColor("purple");
 				setTimeout(function(){
-					// marker.updateLabel("stefan rocks");
-					marker.changeColor("purple");
+					marker.changeColor("yellow");
 					setTimeout(function(){
-						marker.changeColor("yellow");
+						marker.changeColor("darkred");
 						setTimeout(function(){
-							marker.changeColor("darkred");
-							setTimeout(function(){
-								marker.removeFadeOut();
-							}, 3000);
+							marker.removeFadeOut();
 						}, 3000);
 					}, 3000);
 				}, 3000);
+			}, 3000);
 
-			}
+		}
 
-
-
-/*
-
-var timestamp = new Date().getTime();
-var marker = L.animationsvgmarker(map.getCenter(), timestamp);
-marker.addToFadeIn(map);
-
-marker.moveTo(map.getCenter(), 1)
-
-marker.updateLabel("stefan rocks");
-
-marker.removeFadeOut()
-
-
-
-marker.addToFadeIn(map)
-
-
-
-*/
-
-		
-		</script>
-
-	
+	</script>	
 </html>
 
