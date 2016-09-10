@@ -98,14 +98,14 @@ L.AnimationSvgMarker = L.Marker.extend({
             this.label.setContent(""+text);
             this.showLabel();
         }
-        // this.label._container.classList.add("markerInvisible");
-        // this.label._container.classList.add("markerFadeIn");
-        // this.label._container.classList.remove("markerInvisible");
-        // setTimeout(function(){
-        //     if (self.hasOwnProperty("label")) {
-        //         self.label._container.classList.remove("markerFadeIn");
-        //     }
-        // },500);
+        this.label._container.classList.add("markerInvisible");
+        this.label._container.classList.add("markerFadeIn");
+        this.label._container.classList.remove("markerInvisible");
+        setTimeout(function(){
+            if (self.hasOwnProperty("label")) {
+                self.label._container.classList.remove("markerFadeIn");
+            }
+        }, 500);
     },
 
     // popup
