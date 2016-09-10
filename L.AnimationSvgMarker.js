@@ -21,7 +21,7 @@ L.AnimationSvgMarker = L.Marker.extend({
         this.last_movement_timestamp = options.timestamp || 0;
         this.options.iconOptions.color = options.color || "#000000";
         this.map = null;
-        this.updateIcon();
+        this._updateIcon();
         L.Marker.prototype.initialize.call(this, latlng, options);
         this.on("add", function(){
             this.hideLabel();
@@ -109,7 +109,7 @@ L.AnimationSvgMarker = L.Marker.extend({
     },
 
     // popup
-    getPopupHtml: function() {
+    _getPopupHtml: function() {
         var popup_content = "<div class='popup_container'>";
         if (this.properties.hasOwnProperty("event_timestamp")) {
             popup_content += "<label>time</label>: " + this.utils.convertTime(this.properties.event_timestamp) + "<br>";
@@ -121,7 +121,7 @@ L.AnimationSvgMarker = L.Marker.extend({
         return popup_content;
     },
 
-    updateIcon: function() {
+    _updateIcon: function() {
         // https://groups.google.com/forum/#!topic/leaflet-js/GSisdUm5rEc
         // https://github.com/hiasinho/Leaflet.vector-markers/blob/master/dist/leaflet-vector-markers.js
         var mapPin = 'M16,1 C7,1 1,7 1,15 C1,24 16,40 16,40 C16,40 31,24 31,15 C31,7 24,1 16,1 L16,1 Z';
@@ -139,7 +139,7 @@ L.AnimationSvgMarker = L.Marker.extend({
 
     setProperties: function(properties) {
         this.properties = properties;
-        this.bindPopup(this.getPopupHtml());
+        this.bindPopup(this._getPopupHtml());
     },
 
     changeColor: function(color, duration) {
@@ -161,7 +161,7 @@ L.AnimationSvgMarker = L.Marker.extend({
                 setTimeout(function(){
                     if (n<10) {
                         self.options.iconOptions.color = color_scale(n);
-                        self.updateIcon(); 
+                        self._updateIcon(); 
                         update(n+1);
                     }             
                 }, step);
@@ -169,7 +169,7 @@ L.AnimationSvgMarker = L.Marker.extend({
             update(1);
         } else {
             this.options.iconOptions.color = color;
-            this.updateIcon();
+            this._updateIcon();
         }
     },
 

@@ -19,6 +19,7 @@ var marker = L.animationsvgmarker(L.latLng(0, 0), { color: "red" });
 marker.addToFadeIn(map);
 marker.moveTo(L.latLng(20, 20), 1000);
 marker.changeColor("purple", 800);
+marker.setProperties({"message": "I am a marker"});
 marker.removeFadeOut();
 ````
 
@@ -27,4 +28,5 @@ marker.removeFadeOut();
 - **moveTo**: params L.latLng, milliseconds
 - **changeColor**: params color, milliseconds
 - **removeFadeOut**: params milliseconds
+- **setProperties**: params feature properties
 
