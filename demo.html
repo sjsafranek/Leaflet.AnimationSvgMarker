@@ -27,7 +27,9 @@
 	<link rel="stylesheet" href='L.AnimationSvgMarker.css' />		
 	<script src='L.AnimationSvgMarker.js'></script>
 	<script>
+
 		var map, marker;
+		var radius = 20;
 
 		document.addEventListener('DOMContentLoaded', function() {
 		   init();
@@ -60,29 +62,32 @@
 			}).setView([0,0], 2)
 
 			marker = L.animationsvgmarker(map.getCenter(), {
-				timestamp: new Date().getTime()
+				timestamp: new Date().getTime(),
+				color: "purple"
 			});
 
 			setTimeout(function(){
 				marker.addToFadeIn(map);
-				marker.moveTo(L.latLng(20, 20), 1000, new Date().getTime());
-				marker.moveTo(L.latLng(-20, 40), 2000, new Date().getTime());
-				marker.moveTo(L.latLng(30, -30), 5000, new Date().getTime());
-				marker.moveTo(L.latLng(-15, -10), 2000, new Date().getTime());
-				marker.moveTo(map.getCenter(), 500);
-				setTimeout(function(){
-					// marker.updateLabel("stefan rocks");
-					marker.changeColor("purple");
+				function animate(angle) {
+					if (angle%100 == 0) {
+						if (angle%200==0) {
+							marker.changeColor("yellow",750);
+						} else if (angle%300==0){
+							marker.changeColor("darkblue",750);
+						} else {
+							marker.changeColor("red",750);
+						}
+					}
 					setTimeout(function(){
-						marker.changeColor("yellow");
-						setTimeout(function(){
-							marker.changeColor("darkred");
-							setTimeout(function(){
-								marker.removeFadeOut();
-							}, 3000);
-						}, 3000);
-					}, 3000);
-				}, 3000);
+						marker.moveTo(
+							L.latLng(
+								Math.cos(angle/100) * radius, 
+								Math.sin(angle/100) * radius
+							), 25);
+						animate(angle+1);
+					}, 25);
+				}
+				animate(1);
 			}, 1250);
 
 		}
