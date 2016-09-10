@@ -62,27 +62,28 @@
 			marker = L.animationsvgmarker(map.getCenter(), {
 				timestamp: new Date().getTime()
 			});
-			marker.addToFadeIn(map);
-
-			marker.moveTo(L.latLng(20, 20), 1000, new Date().getTime());
-			marker.moveTo(L.latLng(-20, 40), 2000, new Date().getTime());
-			marker.moveTo(L.latLng(30, -30), 5000, new Date().getTime());
-			marker.moveTo(L.latLng(-15, -10), 2000, new Date().getTime());
-			marker.moveTo(map.getCenter(), 500);
 
 			setTimeout(function(){
-				// marker.updateLabel("stefan rocks");
-				marker.changeColor("purple");
+				marker.addToFadeIn(map);
+				marker.moveTo(L.latLng(20, 20), 1000, new Date().getTime());
+				marker.moveTo(L.latLng(-20, 40), 2000, new Date().getTime());
+				marker.moveTo(L.latLng(30, -30), 5000, new Date().getTime());
+				marker.moveTo(L.latLng(-15, -10), 2000, new Date().getTime());
+				marker.moveTo(map.getCenter(), 500);
 				setTimeout(function(){
-					marker.changeColor("yellow");
+					// marker.updateLabel("stefan rocks");
+					marker.changeColor("purple");
 					setTimeout(function(){
-						marker.changeColor("darkred");
+						marker.changeColor("yellow");
 						setTimeout(function(){
-							marker.removeFadeOut();
+							marker.changeColor("darkred");
+							setTimeout(function(){
+								marker.removeFadeOut();
+							}, 3000);
 						}, 3000);
 					}, 3000);
 				}, 3000);
-			}, 3000);
+			}, 1250);
 
 		}
 
