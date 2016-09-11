@@ -83,16 +83,18 @@
 				function animate(angle) {
 					if (angle%100 == 0) {
 						var n = Math.floor((Math.random() * rainbow.length));
-						marker.changeColor(rainbow[n],1500);
+						marker.changeColor(rainbow[n],750);
 					}
 					setTimeout(function(){
 						marker.moveTo(
 							L.latLng(
 								Math.cos(angle/100) * radius, 
 								Math.sin(angle/100) * radius
-							), 25);
+							// ), 25);
+							), 50);
 						animate(angle+1);
-					}, 25);
+					// }, 25);
+				}, 50);
 				}
 				animate(1);
 			}, 1250);
