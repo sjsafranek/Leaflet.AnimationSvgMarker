@@ -63,20 +63,28 @@
 
 			marker = L.animationsvgmarker(map.getCenter(), {
 				timestamp: new Date().getTime(),
-				color: "purple"
+				color: "#FF0000"
 			});
+
+
+			var rainbow = [
+				"#9400D3", // Violet
+				"#4B0082", // Indigo
+				"#0000FF", // Blue
+				"#00FF00", // Green
+				"#FFFF00", // Yellow
+				"#FF7F00", // Orange
+				"#FF0000"  // Red
+			];
+			var c = 0;
 
 			setTimeout(function(){
 				marker.addToFadeIn(map);
 				function animate(angle) {
 					if (angle%100 == 0) {
-						if (angle%200==0) {
-							marker.changeColor("yellow",750);
-						} else if (angle%300==0){
-							marker.changeColor("darkblue",750);
-						} else {
-							marker.changeColor("red",750);
-						}
+						marker.changeColor(rainbow[c],750);
+						c++;
+						c = c % rainbow.length;
 					}
 					setTimeout(function(){
 						marker.moveTo(
