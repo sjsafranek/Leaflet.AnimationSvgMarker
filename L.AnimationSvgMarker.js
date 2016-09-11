@@ -140,7 +140,8 @@ L.AnimationSvgMarker = L.Marker.extend({
         // return;
         // this.options.iconOptions.html = icon;
         // this.options.iconOptions.className = 'svgIcon';
-        // var myIcon = new DivIconWithShadow(this.options.iconOptions);
+        // // var myIcon = new DivIconWithShadow(this.options.iconOptions);
+        // var myIcon = new L.DivIcon(this.options.iconOptions);
         // this.setIcon(myIcon);
     },
 
