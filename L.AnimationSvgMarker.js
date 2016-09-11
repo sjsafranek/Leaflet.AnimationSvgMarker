@@ -4,12 +4,13 @@ L.AnimationSvgMarker = L.Marker.extend({
     options: {
         time_animation_treshold: 900,
         iconOptions: {
-            iconSize: [22, 35],
             iconAnchor: [12, 24],
-            shadowSize: [54, 51],
-            shadowUrl: "images/marker-shadow.png",
-            // shadowAnchor: [18, 45],
+            iconSize: [22, 35],
             shadowAnchor: [18, 46],
+            shadowSize: [54, 51],
+            // shadowAnchor: [14, 36],
+            // shadowSize: [54, 51],
+            shadowUrl: "images/marker-shadow.png",
             popupAnchor: [0, -17],
             viewBox: '0 0 32 52',
             color: "#000000"
@@ -136,6 +137,11 @@ L.AnimationSvgMarker = L.Marker.extend({
         this.options.iconOptions.iconUrl = svgURL;
         var mySVGIcon = L.icon( this.options.iconOptions );
         this.setIcon(mySVGIcon);
+        return;
+        // this.options.iconOptions.html = icon;
+        // this.options.iconOptions.className = 'svgIcon';
+        // var myIcon = new DivIconWithShadow(this.options.iconOptions);
+        // this.setIcon(myIcon);
     },
 
     setProperties: function(properties) {
@@ -145,6 +151,9 @@ L.AnimationSvgMarker = L.Marker.extend({
 
     changeColor: function(color, duration) {
         var self = this;
+        // var seconds = duration;
+        // self._icon.style.transition = "transform "+seconds+"s";
+        // return;
         if (d3) {
             var step = duration || 1000;
             step = step/10;
@@ -250,5 +259,65 @@ L.AnimationSvgMarker = L.Marker.extend({
 L.animationsvgmarker = function(latlng, timestamp) {
     return new L.AnimationSvgMarker(latlng, timestamp);
 };
+
+
+
+
+
+
+DivIconWithShadow = L.DivIcon.extend({
+
+    _createImg: function (src, el) {
+        el = el || document.createElement('img');
+        el.src = src;
+        return el;
+    },
+
+    _getIconUrl: function (name) {
+        return this.options[name + 'Url'];
+    },
+
+    createShadow: function () {
+        // var div = document.createElement('div');
+        var src = "images/marker-shadow.png";
+        // var src = this._getIconUrl("shadow");
+        var img = this._createImg(src);
+        // this._setIconStyles(div, 'shadow');
+        this._setIconStyles(img, 'shadow');
+        // return div;
+        return img;
+    },
+
+    _setIconStyles: function (img, name) {
+        var options = this.options,
+            size = L.point(options[name === 'shadow' ? 'shadowSize' : 'iconSize']),
+            anchor;
+
+        if (name === 'shadow') {
+            anchor = L.point(options.shadowAnchor || options.iconAnchor);
+        } else {
+            anchor = L.point(options.iconAnchor);
+        }
+
+        if (!anchor && size) {
+            anchor = size.divideBy(2, true);
+        }
+
+        img.className = 'awesome-marker-' + name + ' ' + options.className;
+
+        if (anchor) {
+            img.style.marginLeft = (-anchor.x) + 'px';
+            img.style.marginTop  = (-anchor.y) + 'px';
+        }
+
+        if (size) {
+            img.style.width  = size.x + 'px';
+            img.style.height = size.y + 'px';
+        }
+    }
+
+
+});
+
 
 
