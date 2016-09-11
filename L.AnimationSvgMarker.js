@@ -137,7 +137,7 @@ L.AnimationSvgMarker = L.Marker.extend({
         this.options.iconOptions.iconUrl = svgURL;
         var mySVGIcon = L.icon( this.options.iconOptions );
         this.setIcon(mySVGIcon);
-        return;
+        // return;
         // this.options.iconOptions.html = icon;
         // this.options.iconOptions.className = 'svgIcon';
         // var myIcon = new DivIconWithShadow(this.options.iconOptions);
@@ -264,6 +264,8 @@ L.animationsvgmarker = function(latlng, timestamp) {
 
 
 
+
+// http://bl.ocks.org/zross/9c0452908dcf6d040894
 
 DivIconWithShadow = L.DivIcon.extend({
 
