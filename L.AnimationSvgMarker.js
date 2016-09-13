@@ -45,11 +45,13 @@ L.AnimationSvgMarker = L.Marker.extend({
             setTimeout(function(){
                 self._popup._container.onmouseenter = function(){
                     clearTimeout(self._popup.fadeTimeout);
+                    self._popup._container.classList.add("hover");
                 }
                 self._popup._container.onmouseleave = function(){
-                    self._popup.setContent(self._getPopupHtml());
+                    self._popup._container.classList.remove("hover");
                     var point = self.getLatLng();
                     var pt1 = self.map.latLngToLayerPoint(point);
+                    // self._popup.setContent(self._getPopupHtml());
                     self._popup._container.style.transition = "transform 0.75s";
                     self._popup._container.style.transform  = "translate3d(" + pt1.x + "px, " + pt1.y + "px, 0px)";
                     self._popup._latlng = L.latLng(point);
@@ -101,13 +103,16 @@ L.AnimationSvgMarker = L.Marker.extend({
             }
             // popup 
             if (self.hasOwnProperty("_popup")) {
-                // if (self._popup._isOpen && !$(self._popup._container).is(":hover")) {
-                // if (self._popup._isOpen) {
-                if (self._popup.hasOwnProperty("_container")) {
-                    self._popup._container.style.transition = "transform 1.25s";
-                    // self._popup._container.style.transition = "transform 0.75s";
-                    self._popup._container.style.transform  = "translate3d(" + pt1.x + "px, " + pt1.y + "px, 0px)";
-                    self._popup._latlng = L.latLng(point);
+                if (self._popup.hasOwnProperty("_container") ) {
+                    var isHover = false;
+                    self._popup._container.classList.forEach(function(item){
+                        if (item == "hover") { isHover=true; }
+                    });
+                    if (!isHover) {
+                        self._popup._container.style.transition = "transform "+seconds+"s";
+                        self._popup._container.style.transform  = "translate3d(" + pt1.x + "px, " + pt1.y + "px, 0px)";
+                        self._popup._latlng = L.latLng(point);
+                    }
                 }
             }
             self.timeoutLoop = setTimeout(function(){
