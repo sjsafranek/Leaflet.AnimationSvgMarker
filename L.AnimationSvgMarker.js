@@ -28,6 +28,36 @@ L.AnimationSvgMarker = L.Marker.extend({
         this.on("add", function(){
             this.hideLabel();
         });
+
+        this.on("click",function(){
+            var self = this;
+            function fadeOutClosePopup() {
+                clearTimeout(self._popup.fadeTimeout);
+                self._popup.fadeTimeout = setTimeout(function() {
+                    self._popup._container.classList.add("markerFadeOut");
+                    setTimeout(function(){
+                        self.closePopup();
+                        self._popup._container.classList.remove("markerFadeOut");
+                    },1000);
+                },5000);
+            }
+            fadeOutClosePopup();
+            setTimeout(function(){
+                self._popup._container.onmouseenter = function(){
+                    clearTimeout(self._popup.fadeTimeout);
+                }
+                self._popup._container.onmouseleave = function(){
+                    self._popup.setContent(self._getPopupHtml());
+                    var point = self.getLatLng();
+                    var pt1 = self.map.latLngToLayerPoint(point);
+                    self._popup._container.style.transition = "transform 0.75s";
+                    self._popup._container.style.transform  = "translate3d(" + pt1.x + "px, " + pt1.y + "px, 0px)";
+                    self._popup._latlng = L.latLng(point);
+                    fadeOutClosePopup();
+                }
+            },100);
+        });
+
     },
 
     moveTo: function(destination, milliseconds, event_timestamp) {
@@ -63,16 +93,33 @@ L.AnimationSvgMarker = L.Marker.extend({
             self._shadow.style.transition = "transform "+seconds+"s";
             self._icon.style.transform = "translate3d(" + pt1.x + "px, " + pt1.y + "px, 0px)";
             self._shadow.style.transform = "translate3d(" + pt1.x + "px, " + pt1.y + "px, 0px)";
+            // label
             if (self.hasOwnProperty("label")) {
                 self.label._latlng = L.latLng(point.location);
                 self.label._container.style.transition = "transform "+seconds+"s";
                 self.label._container.style.transform = "translate3d(" + (pt1.x+21) + "px, " + (pt1.y-35) + "px, 0px)";
+            }
+            // popup 
+            if (self.hasOwnProperty("_popup")) {
+                // if (self._popup._isOpen && !$(self._popup._container).is(":hover")) {
+                // if (self._popup._isOpen) {
+                if (self._popup.hasOwnProperty("_container")) {
+                    self._popup._container.style.transition = "transform 1.25s";
+                    // self._popup._container.style.transition = "transform 0.75s";
+                    self._popup._container.style.transform  = "translate3d(" + pt1.x + "px, " + pt1.y + "px, 0px)";
+                    self._popup._latlng = L.latLng(point);
+                }
             }
             self.timeoutLoop = setTimeout(function(){
                 self._icon.style.transition = "transform 0s";
                 self._shadow.style.transition = "transform 0s";
                 if (self.hasOwnProperty("label")) {
                     self.label._container.style.transition = "transform 0s";
+                }
+                if (self.hasOwnProperty("_popup")) {
+                    if (self._popup.hasOwnProperty("_container")) {
+                        self._popup._container.style.transition = "transform 0s";
+                    }
                 }
                 window.clearTimeout(self.timeoutLoop);
                 self.timeoutLoop = null;
@@ -147,7 +194,12 @@ L.AnimationSvgMarker = L.Marker.extend({
 
     setProperties: function(properties) {
         this.properties = properties;
-        this.bindPopup(this._getPopupHtml());
+        // this.bindPopup(this._getPopupHtml());
+        if (this.hasOwnProperty("_popup")) {
+            this._popup.setContent(this._getPopupHtml());
+        } else {
+            this.bindPopup(this._getPopupHtml());
+        }
     },
 
     changeColor: function(color, duration) {
