@@ -87,18 +87,21 @@ L.AnimationSvgMarker = L.Marker.extend({
     animate: function() {
         var self = this;
         if (self.path.length > 0) {
+            // var transition_timing = " ease";
+            var transition_timing = "linear";
+            // var transition_timing = " ease-in-out";
             var point = self.path.shift();
             var pt1 = self.map.latLngToLayerPoint(point.location);
             self._latlng = L.latLng(point.location);
             var seconds = point.duration/1000;
-            self._icon.style.transition = "transform "+seconds+"s";
-            self._shadow.style.transition = "transform "+seconds+"s";
+            self._icon.style.transition = "transform "+seconds+"s "+transition_timing;
+            self._shadow.style.transition = "transform "+seconds+"s "+transition_timing;
             self._icon.style.transform = "translate3d(" + pt1.x + "px, " + pt1.y + "px, 0px)";
             self._shadow.style.transform = "translate3d(" + pt1.x + "px, " + pt1.y + "px, 0px)";
             // label
             if (self.hasOwnProperty("label")) {
                 self.label._latlng = L.latLng(point.location);
-                self.label._container.style.transition = "transform "+seconds+"s";
+                self.label._container.style.transition = "transform "+seconds+"s "+transition_timing;
                 self.label._container.style.transform = "translate3d(" + (pt1.x+21) + "px, " + (pt1.y-35) + "px, 0px)";
             }
             // popup 
@@ -109,7 +112,7 @@ L.AnimationSvgMarker = L.Marker.extend({
                         if (item == "hover") { isHover=true; }
                     });
                     if (!isHover) {
-                        self._popup._container.style.transition = "transform "+seconds+"s";
+                        self._popup._container.style.transition = "transform "+seconds+"s "+transition_timing;
                         self._popup._container.style.transform  = "translate3d(" + pt1.x + "px, " + pt1.y + "px, 0px)";
                         self._popup._latlng = L.latLng(point);
                     }
