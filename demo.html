@@ -8,7 +8,7 @@
 		<!-- <link rel="stylesheet" href="https://unpkg.com/leaflet@0.7.7/dist/leaflet.css" /> -->
 		<!-- <script src="https://unpkg.com/leaflet@0.7.7/dist/leaflet.js"></script> -->
 		<link rel="stylesheet" href="https://unpkg.com/leaflet@1.0.0-rc.3/dist/leaflet.css" />
-		<script src="https://unpkg.com/leaflet@1.0.0-rc.3/dist/leaflet.js"></script>
+		<script src="https://unpkg.com/leaflet@1.0.0-rc.3/dist/leaflet-src.js"></script>
 		<!-- Leaflet Labels -->
 		<link href="Leaflet.label/dist/leaflet.label.css" rel="stylesheet" />
 		<script src="Leaflet.label/dist/leaflet.label.js"></script>
@@ -28,10 +28,10 @@
 	</body>
 	<link rel="stylesheet" href='L.AnimationSvgMarker.css' />		
 	<script src='L.AnimationSvgMarker.js'></script>
+	<script src='L.AnimationSvgMarkerLayerGroup.js'></script>
 	<script>
 
 		var map, marker;
-		// var radius = 20;
 		var radius = 50;
 
 		document.addEventListener('DOMContentLoaded', function() {
@@ -82,12 +82,14 @@
 
 			marker.setProperties({title:"i am moving!"});
 
+
+			return;
+
 			setTimeout(function(){
 				marker.addToFadeIn(map);
 				function animate(angle) {
 					if (angle%100 == 0) {
 						var n = Math.floor((Math.random() * rainbow.length));
-						// marker.changeColor(rainbow[n],750);
 						marker.changeColor(rainbow[n], 2000);
 					}
 					setTimeout(function(){
@@ -97,7 +99,7 @@
 								Math.sin(angle/100) * radius
 							), 50);
 						animate(angle+1);
-				}, 50);
+					}, 50);
 				}
 				animate(1);
 			}, 1250);

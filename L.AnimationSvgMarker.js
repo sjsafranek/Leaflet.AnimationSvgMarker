@@ -1,56 +1,44 @@
 
-
-// var circleOptions = {
-//                     iconSize: [22, 35],
-//                     // iconAnchor: [10, 18],
-//                     iconAnchor: [11, 18],
-//                     popupAnchor: [0, 0],
-//                     viewBox: '0 0 50 50'
-//                 }
-//                 var r = 12  // 1.5 * 8;
-//                 icon = '<svg class="shadow" width="' + circleOptions.iconSize[0] + 'px" height="' + circleOptions.iconSize[1] + 'px" viewBox="' + circleOptions.viewBox + '" version="1.1" ' 
-//                      + 'xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">'
-//                      + '<circle cx="25" cy="25" r="'+r+'" stroke="'+this.iconOptions.color+'" stroke-width="3" fill="'+this.iconOptions.color+'" fill-opacity="0.65" /></svg>';
-//                 var svgURL = "data:image/svg+xml;base64," + btoa(icon);
-//                 circleOptions.iconUrl = svgURL;
-//                 var mySVGIcon = L.icon( circleOptions );
-//                 this.setIcon(mySVGIcon);
-
-
 L.AnimationSvgMarker = L.Marker.extend({
 
     options: {
         time_animation_treshold: 900,
-        // type: "marker",
-        type: "circle",
-        markerIconOptions: {
-            iconAnchor: [12, 24],
-            iconSize: [22, 35],
-            shadowAnchor: [18, 46],
-            // shadowAnchor: [22, 46],
-            shadowSize: [54, 51],
-            shadowUrl: "images/marker-shadow.png",
-            popupAnchor: [0, -17],
-            viewBox: '0 0 32 52',
-            color: "#000000",
-            symbol: 'M16,1 C7,1 1,7 1,15 C1,24 16,40 16,40 C16,40 31,24 31,15 C31,7 24,1 16,1 L16,1 Z'
-        },
-        circleIconOptions: {
-            iconSize: [22, 35],
-            // iconAnchor: [10, 18],
-            iconAnchor: [11, 18],
-            popupAnchor: [0, 0],
-            viewBox: '0 0 50 50',
-            radius: 12
-        }
+        type: "circle", // marker
+        color: "#000000"
+    },
+
+    markerIconOptions: {
+        iconAnchor: [12, 24],
+        iconSize: [22, 35],
+        shadowAnchor: [18, 46],
+        // shadowAnchor: [22, 46],
+        shadowSize: [54, 51],
+        shadowUrl: "images/marker-shadow.png",
+        popupAnchor: [0, -17],
+        viewBox: '0 0 32 52',
+        color: "#000000",
+        symbol: 'M16,1 C7,1 1,7 1,15 C1,24 16,40 16,40 C16,40 31,24 31,15 C31,7 24,1 16,1 L16,1 Z'
+    },
+
+    circleIconOptions: {
+        iconSize: [22, 35],
+        // iconAnchor: [10, 18],
+        iconAnchor: [11, 18],
+        popupAnchor: [0, 0],
+        viewBox: '0 0 50 50',
+        radius: 12,
+        color: "#000000"
     },
 
     initialize: function (latlng, options) {
+        // L.setOptions(this, options);
+        L.Util.setOptions(this, options);
         this.path = [];
         this.timeoutLoop = null;
         this.last_movement_timestamp = options.timestamp || 0;
-        this.options.markerIconOptions.color = options.color || "#000000";
-        this.map = null;
+        this.markerIconOptions.color = options.color || "#000000";
+        this.circleIconOptions.color = options.color || "#000000";
+        this._map = null;
         this._updateIcon();
         L.Marker.prototype.initialize.call(this, latlng, options);
         this.on("add", function(){
@@ -78,7 +66,7 @@ L.AnimationSvgMarker = L.Marker.extend({
                 self._popup._container.onmouseleave = function(){
                     self._popup._container.classList.remove("hover");
                     var point = self.getLatLng();
-                    var pt1 = self.map.latLngToLayerPoint(point);
+                    var pt1 = self._map.latLngToLayerPoint(point);
                     // self._popup.setContent(self._getPopupHtml());
                     self._popup._container.style.transition = "transform 0.75s";
                     self._popup._container.style.transform  = "translate3d(" + pt1.x + "px, " + pt1.y + "px, 0px)";
@@ -95,13 +83,13 @@ L.AnimationSvgMarker = L.Marker.extend({
             milliseconds = 1000;
         }
         if (this.path.length == 0) {
-            if (this.getLatLng().lat != destination.lat && this.getLatLng().lng != destination.lng) {
+            if (this.getLatLng().lat != destination.lat || this.getLatLng().lng != destination.lng) {
                 this.last_movement_timestamp = event_timestamp || this.last_movement_timestamp+1;
                 this.path.push({location:destination, duration:milliseconds});
             }
         } else {
             var l = this.path.length-1;
-            if (this.path[l].lat != destination.lat && this.path[l].lng != destination.lng) {
+            if (this.path[l].lat != destination.lat || this.path[l].lng != destination.lng) {
                 this.last_movement_timestamp = event_timestamp || this.last_movement_timestamp+1;
                 this.path.push({location:destination, duration:milliseconds});
             }
@@ -115,11 +103,9 @@ L.AnimationSvgMarker = L.Marker.extend({
     animate: function() {
         var self = this;
         if (self.path.length > 0) {
-            // var transition_timing = " ease";
             var transition_timing = "linear";
-            // var transition_timing = " ease-in-out";
             var point = self.path.shift();
-            var pt1 = self.map.latLngToLayerPoint(point.location);
+            var pt1 = self._map.latLngToLayerPoint(point.location);
             self._latlng = L.latLng(point.location);
             var seconds = point.duration/1000;
             self._icon.style.transition = "transform "+seconds+"s "+transition_timing;
@@ -165,16 +151,9 @@ L.AnimationSvgMarker = L.Marker.extend({
                 self.timeoutLoop = null;
                 self.animate();
             }, point.duration);
-        }
-        else {
-            // if ($("#timecontrol-slider").slider("option", "value") - self.last_movement_timestamp > self.time_animation_treshold) {
-            //     if (self.map.hasLayer(self)) {
-            //         self.removeFadeOut();
-            //         window.clearTimeout(self.timeoutLoop);
-            //         self.timeoutLoop = null;
-            //         return;
-            //     }
-            // }
+        } else {
+            window.clearTimeout(self.timeoutLoop);
+            self.timeoutLoop = null;
         }
     },
 
@@ -215,24 +194,24 @@ L.AnimationSvgMarker = L.Marker.extend({
             // https://groups.google.com/forum/#!topic/leaflet-js/GSisdUm5rEc
             // https://github.com/hiasinho/Leaflet.vector-markers/blob/master/dist/leaflet-vector-markers.js
             // here's the SVG for the marker
-            var icon = '<svg class="symbol" width="' + this.options.markerIconOptions.iconSize[0] + 'px" height="' + this.options.markerIconOptions.iconSize[1] + 'px" viewBox="' + this.options.markerIconOptions.viewBox + '" version="1.1" ' 
+            var icon = '<svg class="symbol" width="' + this.markerIconOptions.iconSize[0] + 'px" height="' + this.markerIconOptions.iconSize[1] + 'px" viewBox="' + this.markerIconOptions.viewBox + '" version="1.1" ' 
                      + 'xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">'
-                     + '<path d="' + this.options.markerIconOptions.symbol + '" fill="' + this.options.markerIconOptions.color + '" stroke="' + this.options.markerIconOptions.color + '" fill-opacity="0.65" stroke-width="3"></path></svg>';            
-            this.options.markerIconOptions.html = icon;
-            this.options.markerIconOptions.className = 'svgIcon';
+                     + '<path d="' + this.markerIconOptions.symbol + '" fill="' + this.markerIconOptions.color + '" stroke="' + this.markerIconOptions.color + '" fill-opacity="0.65" stroke-width="3"></path></svg>';            
+            this.markerIconOptions.html = icon;
+            this.markerIconOptions.className = 'svgIcon';
             // var myIcon = new DivIconWithShadow(this.options.markerIconOptions);
-            var myIcon = new L.DivIcon(this.options.markerIconOptions);
+            var myIcon = new L.DivIcon(this.markerIconOptions);
             this.setIcon(myIcon);
         }
 
         if ("circle" == this.options.type) {
-            icon = '<svg class="symbol" width="' + this.options.circleIconOptions.iconSize[0] + 'px" height="' + this.options.circleIconOptions.iconSize[1] + 'px" viewBox="' + this.options.circleIconOptions.viewBox + '" version="1.1" ' 
+            icon = '<svg class="symbol" width="' + this.circleIconOptions.iconSize[0] + 'px" height="' + this.circleIconOptions.iconSize[1] + 'px" viewBox="' + this.circleIconOptions.viewBox + '" version="1.1" ' 
                  + 'xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">'
-                 + '<circle cx="25" cy="25" r="'+this.options.circleIconOptions.radius+'" stroke="'+this.options.circleIconOptions.color+'" stroke-width="3" fill="'+this.options.circleIconOptions.color+'" fill-opacity="0.65" /></svg>';
+                 + '<circle cx="25" cy="25" r="'+this.circleIconOptions.radius+'" stroke="'+this.circleIconOptions.color+'" stroke-width="3" fill="'+this.circleIconOptions.color+'" fill-opacity="0.65" /></svg>';
             var svgURL = "data:image/svg+xml;base64," + btoa(icon);
-            this.options.circleIconOptions.html = icon;
-            this.options.circleIconOptions.className = 'svgIcon';
-            var myIcon = new L.DivIcon(this.options.circleIconOptions);
+            this.circleIconOptions.html = icon;
+            this.circleIconOptions.className = 'svgIcon';
+            var myIcon = new L.DivIcon(this.circleIconOptions);
             this.setIcon(myIcon);
         }
 
@@ -249,44 +228,12 @@ L.AnimationSvgMarker = L.Marker.extend({
 
     changeColor: function(color, duration) {
         var self = this;
-        // stroke
-        // fill
-        
-        // self._icon.style.transition = "all "+duration+"s linear";
-        // self._icon.getElementsByTagName("svg")[0].style.stroke = color;
-        // self._icon.getElementsByTagName("svg")[0].style.fill = color;
-
-        d3.select(self._icon.getElementsByTagName("circle")[0]).transition().duration(duration||1000).style("fill",  color).style("stroke",color);
-
-        return;
-
         if (d3) {
-            var step = duration || 1000;
-            step = step/10;
-            var color_scale;
-            if ("4" == d3.version[0]){
-                color_scale = d3.scaleLinear()
-                    .domain([0, 9])
-                    .range([this.options.markerIconOptions.color, color]);   
-            } else if ("3" == d3.version[0]) {
-                color_scale = d3.scale.linear()
-                    .domain([0, 9])
-                    .range([this.options.markerIconOptions.color, color]);
-            }
-            function update(n) {
-                setTimeout(function(){
-                    if (n<10) {
-                        self.options.markerIconOptions.color = color_scale(n);
-                        this.options.circleIconOptions.color = color_scale(n);
-                        self._updateIcon(); 
-                        update(n+1);
-                    }             
-                }, step);
-            }
-            update(1);
+            d3.select(self._icon.getElementsByTagName("circle")[0]).transition().duration(duration||1000).style("fill",  color).style("stroke",color);
+            d3.select(self._icon.getElementsByTagName("path")[0]).transition().duration(duration||1000).style("fill",  color).style("stroke",color);
         } else {
-            this.options.markerIconOptions.color = color;
-            this.options.circleIconOptions.color = color;
+            this.markerIconOptions.color = color;
+            this.circleIconOptions.color = color;
             this._updateIcon();
         }
     },
@@ -295,7 +242,7 @@ L.AnimationSvgMarker = L.Marker.extend({
         var self = this;
         var duration = milliseconds || 500;
         self.addTo(map);
-        self.map = map;
+        self._map = map;
         if (self.hasOwnProperty("label")) {
             self.hideLabel();
         }
@@ -383,8 +330,8 @@ L.AnimationSvgMarker = L.Marker.extend({
 });
 
 
-L.animationsvgmarker = function(latlng, timestamp) {
-    return new L.AnimationSvgMarker(latlng, timestamp);
+L.animationsvgmarker = function(latlng, options) {
+    return new L.AnimationSvgMarker(latlng, options);
 };
 
 
