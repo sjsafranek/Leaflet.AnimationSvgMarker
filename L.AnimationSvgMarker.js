@@ -135,7 +135,9 @@ L.AnimationSvgMarker = L.Marker.extend({
                 }
             }
             self.timeoutLoop = setTimeout(function(){
-                self._icon.style.transition = "transform 0s";
+                if (self._icon) {
+                    self._icon.style.transition = "transform 0s";
+                }
                 if (self._shadow) {
                     self._shadow.style.transition = "transform 0s";
                 }
@@ -229,8 +231,10 @@ L.AnimationSvgMarker = L.Marker.extend({
     changeColor: function(color, duration) {
         var self = this;
         if (d3) {
-            d3.select(self._icon.getElementsByTagName("circle")[0]).transition().duration(duration||1000).style("fill",  color).style("stroke",color);
-            d3.select(self._icon.getElementsByTagName("path")[0]).transition().duration(duration||1000).style("fill",  color).style("stroke",color);
+            if (self._icon) {
+                d3.select(self._icon.getElementsByTagName("circle")[0]).transition().duration(duration||1000).style("fill",  color).style("stroke",color);
+                d3.select(self._icon.getElementsByTagName("path")[0]).transition().duration(duration||1000).style("fill",  color).style("stroke",color);
+            }
         } else {
             this.markerIconOptions.color = color;
             this.circleIconOptions.color = color;
@@ -255,8 +259,9 @@ L.AnimationSvgMarker = L.Marker.extend({
             self._shadow.classList.remove("markerInvisible");
         }
         setTimeout(function(){
-            self._icon.classList.remove("markerFadeIn");
-
+            if (self._icon) {
+                self._icon.classList.remove("markerFadeIn");
+            }
             if (self._shadow) {
                 self._shadow.classList.remove("markerFadeIn");
             }
@@ -266,7 +271,9 @@ L.AnimationSvgMarker = L.Marker.extend({
     removeFadeOut: function(milliseconds) {
         var duration = milliseconds || 1000;
         var self = this;
-        self._icon.classList.add("markerFadeOut");
+        if (self._icon) {
+            self._icon.classList.add("markerFadeOut");
+        }
         if (self._shadow) {
             self._shadow.classList.add("markerFadeOut");
         }
@@ -393,3 +400,20 @@ DivIconWithShadow = L.DivIcon.extend({
 
 
 
+/*
+
+
+
+            function getDelay(x) {
+                var delay = self.animation.delayTimes[self.animation.delayTimes.length-1];
+                var n = (-1*delay.stdev*x) + delay.mean;
+                return n;
+            }
+            var delay = getDelay(this._vectorLayers.markerGroup.getMarker(key).path.length);
+            var transform_time = 1250+delay-100;
+
+
+
+
+
+*/

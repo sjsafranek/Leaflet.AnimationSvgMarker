@@ -50,6 +50,7 @@ L.AnimationSvgMarkerLayerGroup = L.LayerGroup.extend({
     },
 
     addMarker: function(key, latLng, options) {
+        var self = this;
         if (this.alias.hasOwnProperty(key)) {
             return;
         }
@@ -61,10 +62,20 @@ L.AnimationSvgMarkerLayerGroup = L.LayerGroup.extend({
             this.alias[key] = id;
             return this._layers[this.alias[key]];
         } else {
-            var id = g.queue.dequeue();
+            var id = this.queue.dequeue();
             this.alias[key] = id;
-            this._layers[id].addToFadeIn(this._map);
+            // this._layers[id].addToFadeIn(this._map);
+
+            this._layers[id]._icon.classList.add("markerFadeIn");
+            this._layers[id]._icon.classList.remove("markerInvisible");
+            setTimeout(function(){
+                if (self._layers[id]._icon) {
+                    self._layers[id]._icon.classList.remove("markerFadeIn");
+                }
+            }, 500);
+
             this._layers[id].moveTo(latLng, 5);
+            return this._layers[this.alias[key]];
         }
     },
 
@@ -73,11 +84,35 @@ L.AnimationSvgMarkerLayerGroup = L.LayerGroup.extend({
     },
 
     removeMarker: function(key) {
+        var self = this;
         if (this.alias.hasOwnProperty(key)) {
             var id = this.alias[key];
-            this._layers[id].removeFadeOut();
+            // this._layers[id].removeFadeOut();
+
+            if (this._layers[id]._icon) {
+                this._layers[id]._icon.classList.add("markerFadeOut");
+            }
+            if (this._layers[id].hasOwnProperty("label")) {
+                this._layers[id].label._container.classList.add("markerFadeOut");
+            }
+            setTimeout(function(){
+                self._layers[id]._icon.classList.remove("markerFadeOut");
+                self._layers[id]._icon.classList.add("markerInvisible");
+                if (self._layers[id].hasOwnProperty("label")) {
+                    self._layers[id].hideLabel();
+                    self._layers[id].label._container.classList.remove("markerFadeOut");
+                }
+            }, 1000);
+
+
             delete this.alias[key];
             this.queue.enqueue(id);
+        }
+    },
+
+    clearAllMarkers: function() {
+        for (var i in this.alias) {
+            this.removeMarker(i);
         }
     }
 
