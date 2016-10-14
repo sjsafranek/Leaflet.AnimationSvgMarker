@@ -45,6 +45,14 @@ L.AnimationSvgMarker = L.Marker.extend({
             this.hideLabel();
         });
 
+        // add label
+        if ("marker" == this.options.type) {
+            this.bindLabel("", { noHide: true });
+        }
+        else if ("circle" == this.options.type) { 
+            this.bindLabel("", { noHide: true, offset:[14,-17] });
+        }
+
         this.on("click",function(){
             var self = this;
             function fadeOutClosePopup() {

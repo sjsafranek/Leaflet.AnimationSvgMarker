@@ -35,6 +35,8 @@ L.AnimationSvgMarkerLayerGroup = L.LayerGroup.extend({
     initialize: function (layers) {
         this.alias = {};
         this.queue = new Queue();
+        this.updateQueue = new Queue();
+        this.lock = false;
 
         this._layers = {};
 
@@ -47,11 +49,30 @@ L.AnimationSvgMarkerLayerGroup = L.LayerGroup.extend({
         }
 
         L.LayerGroup.prototype.initialize.call(layers);
+
+        this.processUpdateQueue();
+    },
+
+    processUpdateQueue: function() {
+        var self = this;
+        setInterval(function(){
+            if (self.updateQueue.size() != 0) {
+                var data = self.updateQueue.dequeue();
+                self.addMarker(data.key,data.latLng,data.options);
+            }
+        }, 50);
     },
 
     addMarker: function(key, latLng, options) {
         var self = this;
+        if (this.lock) {
+            self.updateQueue.enqueue({"key":key, "latLng":latLng, "options":options})
+            return;
+        }
+
+        var self = this;
         if (this.alias.hasOwnProperty(key)) {
+            this._layers[id]._icon.classList.remove("markerInvisible");
             return;
         }
         else if (0 == this.queue.size()) {
@@ -60,6 +81,7 @@ L.AnimationSvgMarkerLayerGroup = L.LayerGroup.extend({
             lyr.addToFadeIn(this._map);
             this.addLayer(lyr);
             this.alias[key] = id;
+
             return this._layers[this.alias[key]];
         } else {
             var id = this.queue.dequeue();
@@ -68,11 +90,18 @@ L.AnimationSvgMarkerLayerGroup = L.LayerGroup.extend({
 
             this._layers[id]._icon.classList.add("markerFadeIn");
             this._layers[id]._icon.classList.remove("markerInvisible");
+            this._layers[id].label._container.classList.remove("markerInvisible");
+
             setTimeout(function(){
                 if (self._layers[id]._icon) {
                     self._layers[id]._icon.classList.remove("markerFadeIn");
                 }
             }, 500);
+
+            setTimeout(function() {
+                self._layers[id]._icon.classList.remove("markerInvisible");
+                self._layers[id].label._container.classList.remove("markerInvisible");
+            }, 1000);
 
             this._layers[id].moveTo(latLng, 5);
             return this._layers[this.alias[key]];
@@ -101,6 +130,7 @@ L.AnimationSvgMarkerLayerGroup = L.LayerGroup.extend({
                 if (self._layers[id].hasOwnProperty("label")) {
                     self._layers[id].hideLabel();
                     self._layers[id].label._container.classList.remove("markerFadeOut");
+                    self._layers[id].label._container.classList.remove("markerInvisible");
                 }
             }, 1000);
 
@@ -111,9 +141,12 @@ L.AnimationSvgMarkerLayerGroup = L.LayerGroup.extend({
     },
 
     clearAllMarkers: function() {
+        this.lock = true;
         for (var i in this.alias) {
             this.removeMarker(i);
         }
+        this.alias = {};
+        this.lock = false;
     }
 
 });
