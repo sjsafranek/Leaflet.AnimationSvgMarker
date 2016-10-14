@@ -60,9 +60,11 @@ L.AnimationSvgMarkerLayerGroup = L.LayerGroup.extend({
     processUpdateQueue: function() {
         var self = this;
         setInterval(function(){
-            if (self.updateQueue.size() != 0) {
-                var data = self.updateQueue.dequeue();
-                self.addMarker(data.key,data.latLng,data.options);
+            if (!self.lock) {
+                if (self.updateQueue.size() != 0) {
+                    var data = self.updateQueue.dequeue();
+                    self.addMarker(data.key,data.latLng,data.options);
+                }
             }
         }, 50);
     },
@@ -120,6 +122,7 @@ L.AnimationSvgMarkerLayerGroup = L.LayerGroup.extend({
         var self = this;
         if (this.alias.hasOwnProperty(key)) {
             var id = this.alias[key];
+            delete this.alias[key];
             // this._layers[id].removeFadeOut();
 
             if (this._layers[id]._icon) {
@@ -135,12 +138,11 @@ L.AnimationSvgMarkerLayerGroup = L.LayerGroup.extend({
                     self._layers[id].hideLabel();
                     self._layers[id].label._container.classList.remove("markerFadeOut");
                     self._layers[id].label._container.classList.remove("markerInvisible");
+                    self.queue.enqueue(id);
                 }
             }, 1000);
 
-
-            delete this.alias[key];
-            this.queue.enqueue(id);
+            // this.queue.enqueue(id);
         }
     },
 
