@@ -189,9 +189,6 @@ L.AnimationSvgMarker = L.Marker.extend({
     // popup
     _getPopupHtml: function() {
         var popup_content = "<div class='popup_container'>";
-        if (this.properties.hasOwnProperty("event_timestamp")) {
-            popup_content += "<label>time</label>: " + this.utils.convertTime(this.properties.event_timestamp) + "<br>";
-        }
         for (var f in this.properties) {
             popup_content += "<label>" + f + "</label>: " + this.properties[f] + "<br>";
         }
@@ -230,7 +227,20 @@ L.AnimationSvgMarker = L.Marker.extend({
     setProperties: function(properties) {
         this.properties = properties;
         if (this.hasOwnProperty("_popup")) {
-            this._popup.setContent(this._getPopupHtml());
+            // try { this._popup.setContent(this._getPopupHtml()); }
+            // catch(err) {}
+
+            try {
+                var isHover = false;
+                this._popup._container.classList.forEach(function(item){
+                    if (item == "hover") { isHover=true; }
+                });
+                if (!isHover) {
+                    this._popup.setContent(this._getPopupHtml());
+                }
+            }
+            catch(err){}
+
         } else {
             this.bindPopup(this._getPopupHtml());
         }
