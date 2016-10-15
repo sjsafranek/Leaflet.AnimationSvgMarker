@@ -310,6 +310,8 @@ L.AnimationSvgMarker = L.Marker.extend({
                 self.hideLabel();
                 self.label._container.classList.remove("markerFadeOut");
             }
+            clearTimeout(self.timeoutLoop);
+            self.path = [];
         }, duration);
     },
 
@@ -429,6 +431,106 @@ DivIconWithShadow = L.DivIcon.extend({
             }
             var delay = getDelay(this._vectorLayers.markerGroup.getMarker(key).path.length);
             var transform_time = 1250+delay-100;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    createMarker2: function(key, feature) {
+        var self = this;
+
+        function _getPopupHtml(feature) {
+            var popup_content = "<div class='popup_container'>";
+            var datetime = self.format(
+                new Date(
+                    moment(
+                        new Date(feature.properties.event_timestamp*1000)
+                    ).zone(self.options.timezone_offset).format('YYYY-MM-DD HH:mm')
+                )
+            );
+            popup_content += "<label>Time</label>: <span title="+feature.properties.event_timestamp+">" + datetime + "</span><br>";
+            for (var f in feature.properties) {
+                popup_content += "<label>" + f + "</label>: " + feature.properties[f] + "<br>";
+            }
+            popup_content += "</div>";
+            return popup_content;
+        }
+
+        var marker = null;
+
+        // HOOK UP LABELS
+        if (!this._vectorLayers.markerGroup.getMarker(key)) {
+            var self = this;
+            var marker = this._vectorLayers.markerGroup.addMarker(
+                key, 
+                L.latLng(feature.geometry.coordinates[1],feature.geometry.coordinates[0]),
+                {
+                    color: self.getColor(feature.properties),
+                    timestamp: feature.properties.event_timestamp, 
+                    type:this.options.markerType
+                }
+            );
+            marker.setProperties(feature.properties);
+        } else {
+            marker = this._vectorLayers.markerGroup.getMarker(key);
+            marker.setProperties(feature.properties);
+
+            var latlng = L.latLng(feature.geometry.coordinates[1], feature.geometry.coordinates[0]);
+
+            function getRandomInt(min, max) {
+                return Math.floor(Math.random() * (max - min + 1)) + min;
+            }
+
+            function getDelay(x) {
+                var delay = self.animation.delayTimes[self.animation.delayTimes.length-1];
+                var n = (-1*delay.stdev*x) + delay.mean;
+                n += getRandomInt(delay.mean*-10, delay.mean*20);
+                return n;
+            }
+
+            var delay = getDelay(marker.path.length);
+            var transform_time = 1250+delay-100;
+            marker.moveTo(latlng, transform_time, feature.properties.event_timestamp);
+        }
+
+        // CREATE POPUP
+        var content = _getPopupHtml(feature);
+        if (marker.hasOwnProperty("_popup")) {
+            if (!marker._popup._isOpen) {
+                marker._popup.setContent(content);  
+            }
+            // marker._popup.setContent(content);
+        } else {
+            marker.bindPopup(content);
+        }
+
+        marker.changeColor(
+            this.getColor(feature.properties)
+        );
+
+
+        if ("none" != $("#labelField").val()) {
+            this._vectorLayers.markerGroup.getMarker(key).label.setContent(""+feature.properties[$("#labelField").val()]);
+            this._vectorLayers.markerGroup.getMarker(key).showLabel();
+        } else {
+            this._vectorLayers.markerGroup.getMarker(key).hideLabel();
+        }
+
+    },
+
+
+
+
+
 
 
 

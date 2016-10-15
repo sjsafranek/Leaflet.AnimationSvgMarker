@@ -94,8 +94,12 @@ L.AnimationSvgMarkerLayerGroup = L.LayerGroup.extend({
             this.alias[key] = id;
             // this._layers[id].addToFadeIn(this._map);
 
-            // this._layers[id]._icon.style.transition = "transform 0s";
-            // this._layers[id].setLatLng(latLng);
+            this._layers[id]._icon.style.transition = "transform 0s";
+            if (self._layers[id].hasOwnProperty("label")) {
+                self._layers[id].label._container.style.transition = "transform 0s";
+            }
+            this._layers[id].setLatLng(latLng);
+            // this._layers[id].moveTo(latLng, 10, 0);
 
             this._layers[id]._icon.classList.add("markerFadeIn");
             this._layers[id]._icon.classList.remove("markerInvisible");
@@ -112,7 +116,7 @@ L.AnimationSvgMarkerLayerGroup = L.LayerGroup.extend({
                 self._layers[id].label._container.classList.remove("markerInvisible");
             }, 1000);
 
-            this._layers[id].moveTo(latLng, 10, 0);
+            // this._layers[id].moveTo(latLng, 10, 0);
             // this._layers[id].setLatLng(latLng);
 
             return this._layers[this.alias[key]];
@@ -145,6 +149,7 @@ L.AnimationSvgMarkerLayerGroup = L.LayerGroup.extend({
                     self._layers[id].label._container.classList.remove("markerInvisible");
                     window.clearTimeout(self._layers[id].timeoutLoop);
                     self._layers[id].timeoutLoop = null;
+                    self._layers[id].path = [];
                     self.queue.enqueue(id);
                 }
             }, 1000);
