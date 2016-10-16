@@ -75,7 +75,6 @@ L.AnimationSvgMarker = L.Marker.extend({
                     self._popup._container.classList.remove("hover");
                     var point = self.getLatLng();
                     var pt1 = self._map.latLngToLayerPoint(point);
-                    // self._popup.setContent(self._getPopupHtml());
                     self._popup._container.style.transition = "transform 0.75s";
                     self._popup._container.style.transform  = "translate3d(" + pt1.x + "px, " + pt1.y + "px, 0px)";
                     self._popup._latlng = L.latLng(point);
@@ -229,7 +228,6 @@ L.AnimationSvgMarker = L.Marker.extend({
         if (this.hasOwnProperty("_popup")) {
             // try { this._popup.setContent(this._getPopupHtml()); }
             // catch(err) {}
-
             try {
                 var isHover = false;
                 this._popup._container.classList.forEach(function(item){
@@ -240,7 +238,6 @@ L.AnimationSvgMarker = L.Marker.extend({
                 }
             }
             catch(err){}
-
         } else {
             this.bindPopup(this._getPopupHtml());
         }
