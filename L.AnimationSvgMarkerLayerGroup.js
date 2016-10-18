@@ -53,8 +53,12 @@ L.AnimationSvgMarkerLayerGroup = L.LayerGroup.extend({
         this.processUpdateQueue();
     },
 
-    size: function() {
+    size_layers: function() {
         return Object.keys(this._layers).length;
+    },
+
+    size_active: function() {
+        return Object.keys(this.alias).length;
     },
 
     processUpdateQueue: function() {
