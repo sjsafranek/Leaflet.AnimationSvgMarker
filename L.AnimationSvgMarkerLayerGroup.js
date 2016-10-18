@@ -194,7 +194,7 @@ L.AnimationSvgMarkerLayerGroup = L.LayerGroup.extend({
             this._layers[id].removeFadeOut();
             setTimeout(function(){
                 self.removeLayer(id);
-            }, 1000);
+            }, 750);
         }
     },
 
@@ -208,12 +208,16 @@ L.AnimationSvgMarkerLayerGroup = L.LayerGroup.extend({
     },
 
     destroyAllMarkers: function() {
+        var self = this
         this.lock = true;
-        for (var i in this.alias) {
-            this.destroyMarker(i);
+        while (Object.keys(this._layers) != 0) {
+            this.destroyMarker(Object.keys(this._layers)[0]);
         }
         this.alias = {};
-        this.lock = false;
+        setTimeout(function(){
+            self.lock = false;
+        },1250);
+        // this.lock = false;
     }
 
 });
