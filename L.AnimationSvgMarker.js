@@ -63,9 +63,9 @@ L.AnimationSvgMarker = L.Marker.extend({
                         self.closePopup();
                         self._popup._container.classList.remove("markerFadeOut");
                     },1000);
-                },5000);
+                },8000);
             }
-            fadeOutClosePopup();
+            // fadeOutClosePopup();
             setTimeout(function(){
                 self._popup._container.onmouseenter = function(){
                     clearTimeout(self._popup.fadeTimeout);
@@ -78,7 +78,7 @@ L.AnimationSvgMarker = L.Marker.extend({
                     self._popup._container.style.transition = "transform 0.75s";
                     self._popup._container.style.transform  = "translate3d(" + pt1.x + "px, " + pt1.y + "px, 0px)";
                     self._popup._latlng = L.latLng(point);
-                    fadeOutClosePopup();
+                    // fadeOutClosePopup();
                 }
             },100);
         });
@@ -125,15 +125,22 @@ L.AnimationSvgMarker = L.Marker.extend({
             if (self.hasOwnProperty("label")) {
                 self.label._latlng = L.latLng(point.location);
                 self.label._container.style.transition = "transform "+seconds+"s "+transition_timing;
-                self.label._container.style.transform = "translate3d(" + (pt1.x+21) + "px, " + (pt1.y-35) + "px, 0px)";
+                if ("marker" == self.options.type) {
+					self.label._container.style.transform = "translate3d(" + (pt1.x+21) + "px, " + (pt1.y-35) + "px, 0px)";
+                }
+                else if ("circle" == self.options.type) {
+					self.label._container.style.transform = "translate3d(" + (pt1.x+14) + "px, " + (pt1.y-17) + "px, 0px)";
+				}
             }
             // popup 
             if (self.hasOwnProperty("_popup")) {
                 if (self._popup.hasOwnProperty("_container") ) {
                     var isHover = false;
-                    self._popup._container.classList.forEach(function(item){
-                        if (item == "hover") { isHover=true; }
-                    });
+                    for (var i=0; i < self._popup._container.classList.length; i++) {
+                        if (self._popup._container.classList[i] == "hover") { 
+                            isHover=true; 
+                        }
+                    };
                     if (!isHover) {
                         self._popup._container.style.transition = "transform "+seconds+"s "+transition_timing;
                         self._popup._container.style.transform  = "translate3d(" + pt1.x + "px, " + pt1.y + "px, 0px)";
@@ -187,6 +194,9 @@ L.AnimationSvgMarker = L.Marker.extend({
 
     // popup
     _getPopupHtml: function() {
+        // TODO :: update pieces of the popup!
+        // TODO :: update pieces of the popup!
+        // TODO :: update pieces of the popup!
         var popup_content = "<div class='popup_container'>";
         for (var f in this.properties) {
             popup_content += "<label>" + f + "</label>: " + this.properties[f] + "<br>";
@@ -225,22 +235,18 @@ L.AnimationSvgMarker = L.Marker.extend({
 
     setProperties: function(properties) {
         this.properties = properties;
-        if (this.hasOwnProperty("_popup")) {
-            // try { this._popup.setContent(this._getPopupHtml()); }
-            // catch(err) {}
-            try {
-                var isHover = false;
-                this._popup._container.classList.forEach(function(item){
-                    if (item == "hover") { isHover=true; }
-                });
-                if (!isHover) {
-                    this._popup.setContent(this._getPopupHtml());
-                }
-            }
-            catch(err){}
-        } else {
-            this.bindPopup(this._getPopupHtml());
-        }
+		var content = this._getPopupHtml();
+		if (this.hasOwnProperty("_popup")) {
+			if (!this._popup._isOpen) {
+				this._popup.setContent(content);
+			} else {
+		        for (var f in this.properties) {
+		        	$(this._popup._container).find('span[column_id="'+f+'"]').text(this.properties[f]);
+		        }
+			}
+		} else {
+			this.bindPopup(content);
+		}
     },
 
     changeColor: function(color, duration) {
@@ -417,120 +423,23 @@ DivIconWithShadow = L.DivIcon.extend({
 
 
 
-/*
+
+    /**
+     * Returns a random integer between min (inclusive) and max (inclusive)
+     * Using Math.round() will give you a non-uniform distribution!
+     */
+    // function getRandomInt(min, max) {
+    //     return Math.floor(Math.random() * (max - min + 1)) + min;
+    // }
+
+    // function getDelay(x) {
+    //     var delay = self.animation.delayTimes[self.animation.delayTimes.length-1];
+    //     var n = (-15*delay.stdev*Math.pow(x,2)) + delay.mean;
+    //     return n;
+    // }
+
+    // var delay = getDelay(marker.path.length);
+    // var transform_time = 1250+delay-100;
+    // marker.moveTo(latlng, transform_time, feature.properties.event_timestamp);
 
 
-
-            function getDelay(x) {
-                var delay = self.animation.delayTimes[self.animation.delayTimes.length-1];
-                var n = (-1*delay.stdev*x) + delay.mean;
-                return n;
-            }
-            var delay = getDelay(this._vectorLayers.markerGroup.getMarker(key).path.length);
-            var transform_time = 1250+delay-100;
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-    createMarker2: function(key, feature) {
-        var self = this;
-
-        function _getPopupHtml(feature) {
-            var popup_content = "<div class='popup_container'>";
-            var datetime = self.format(
-                new Date(
-                    moment(
-                        new Date(feature.properties.event_timestamp*1000)
-                    ).zone(self.options.timezone_offset).format('YYYY-MM-DD HH:mm')
-                )
-            );
-            popup_content += "<label>Time</label>: <span title="+feature.properties.event_timestamp+">" + datetime + "</span><br>";
-            for (var f in feature.properties) {
-                popup_content += "<label>" + f + "</label>: " + feature.properties[f] + "<br>";
-            }
-            popup_content += "</div>";
-            return popup_content;
-        }
-
-        var marker = null;
-
-        // HOOK UP LABELS
-        if (!this._vectorLayers.markerGroup.getMarker(key)) {
-            var self = this;
-            var marker = this._vectorLayers.markerGroup.addMarker(
-                key, 
-                L.latLng(feature.geometry.coordinates[1],feature.geometry.coordinates[0]),
-                {
-                    color: self.getColor(feature.properties),
-                    timestamp: feature.properties.event_timestamp, 
-                    type:this.options.markerType
-                }
-            );
-            marker.setProperties(feature.properties);
-        } else {
-            marker = this._vectorLayers.markerGroup.getMarker(key);
-            marker.setProperties(feature.properties);
-
-            var latlng = L.latLng(feature.geometry.coordinates[1], feature.geometry.coordinates[0]);
-
-            function getRandomInt(min, max) {
-                return Math.floor(Math.random() * (max - min + 1)) + min;
-            }
-
-            function getDelay(x) {
-                var delay = self.animation.delayTimes[self.animation.delayTimes.length-1];
-                var n = (-1*delay.stdev*x) + delay.mean;
-                n += getRandomInt(delay.mean*-10, delay.mean*20);
-                return n;
-            }
-
-            var delay = getDelay(marker.path.length);
-            var transform_time = 1250+delay-100;
-            marker.moveTo(latlng, transform_time, feature.properties.event_timestamp);
-        }
-
-        // CREATE POPUP
-        var content = _getPopupHtml(feature);
-        if (marker.hasOwnProperty("_popup")) {
-            if (!marker._popup._isOpen) {
-                marker._popup.setContent(content);  
-            }
-            // marker._popup.setContent(content);
-        } else {
-            marker.bindPopup(content);
-        }
-
-        marker.changeColor(
-            this.getColor(feature.properties)
-        );
-
-
-        if ("none" != $("#labelField").val()) {
-            this._vectorLayers.markerGroup.getMarker(key).label.setContent(""+feature.properties[$("#labelField").val()]);
-            this._vectorLayers.markerGroup.getMarker(key).showLabel();
-        } else {
-            this._vectorLayers.markerGroup.getMarker(key).hideLabel();
-        }
-
-    },
-
-
-
-
-
-
-
-
-
-
-*/

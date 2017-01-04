@@ -41,6 +41,12 @@
     background: rgba(0, 0, 0, 0);
 }
 
+.popup_container {
+    max-height: 200px; 
+    overflow-y: scroll;
+}
+
+
 /*.awesome-marker-shadow {
   background: url('images/marker-shadow.png') no-repeat 0 0;
   width: 36px;

@@ -64,7 +64,8 @@
 
 			marker = L.animationsvgmarker(map.getCenter(), {
 				timestamp: new Date().getTime(),
-				color: "#FF0000"
+				color: "#FF0000",
+				type: "marker"
 			});
 
 			// Colors of the rainbow
@@ -80,8 +81,6 @@
 
 			marker.setProperties({title:"i am moving!"});
 
-
-			return;
 
 			setTimeout(function(){
 				marker.addToFadeIn(map);

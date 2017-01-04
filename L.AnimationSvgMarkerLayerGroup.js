@@ -182,7 +182,13 @@ L.AnimationSvgMarkerLayerGroup = L.LayerGroup.extend({
             if (this._layers[id].hasOwnProperty("label")) {
                 this._layers[id].label._container.classList.add("markerFadeOut");
             }
+
             setTimeout(function(){
+                if (self._layers[id].hasOwnProperty("_popup")) {
+                    if (self._layers[id]._popup._isOpen) {
+                        self._layers[id].closePopup();
+                    }
+                }
                 self._layers[id]._icon.classList.remove("markerFadeOut");
                 self._layers[id]._icon.classList.add("markerInvisible");
                 if (self._layers[id].hasOwnProperty("label")) {
@@ -195,6 +201,7 @@ L.AnimationSvgMarkerLayerGroup = L.LayerGroup.extend({
                     self.queue.enqueue(id);
                 }
             }, 1000);
+
         }
     },
 
@@ -206,7 +213,7 @@ L.AnimationSvgMarkerLayerGroup = L.LayerGroup.extend({
             this._layers[id].removeFadeOut();
             setTimeout(function(){
                 self.removeLayer(id);
-            }, 750);
+            }, 10);
         }
     },
 
@@ -265,6 +272,9 @@ g.getMarker("test1")
 g.getMarker("test2")
 
 g.getMarker("test2").moveTo(L.latLng(30,70),10)
+
+
+
 
 
 */
