@@ -211,7 +211,7 @@ L.AnimationSvgMarker = L.Marker.extend({
             // https://groups.google.com/forum/#!topic/leaflet-js/GSisdUm5rEc
             // https://github.com/hiasinho/Leaflet.vector-markers/blob/master/dist/leaflet-vector-markers.js
             // here's the SVG for the marker
-            var icon = '<svg class="symbol" width="' + this.markerIconOptions.iconSize[0] + 'px" height="' + this.markerIconOptions.iconSize[1] + 'px" viewBox="' + this.markerIconOptions.viewBox + '" version="1.1" ' 
+            var icon = '<svg class="symbol shadow" width="' + this.markerIconOptions.iconSize[0] + 'px" height="' + this.markerIconOptions.iconSize[1] + 'px" viewBox="' + this.markerIconOptions.viewBox + '" version="1.1" ' 
                      + 'xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">'
                      + '<path d="' + this.markerIconOptions.symbol + '" fill="' + this.markerIconOptions.color + '" stroke="' + this.markerIconOptions.color + '" fill-opacity="0.65" stroke-width="3"></path></svg>';            
             this.markerIconOptions.html = icon;
@@ -222,7 +222,7 @@ L.AnimationSvgMarker = L.Marker.extend({
         }
 
         if ("circle" == this.options.type) {
-            icon = '<svg class="symbol" width="' + this.circleIconOptions.iconSize[0] + 'px" height="' + this.circleIconOptions.iconSize[1] + 'px" viewBox="' + this.circleIconOptions.viewBox + '" version="1.1" ' 
+            icon = '<svg class="symbol shadow" width="' + this.circleIconOptions.iconSize[0] + 'px" height="' + this.circleIconOptions.iconSize[1] + 'px" viewBox="' + this.circleIconOptions.viewBox + '" version="1.1" ' 
                  + 'xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">'
                  + '<circle cx="25" cy="25" r="'+this.circleIconOptions.radius+'" stroke="'+this.circleIconOptions.color+'" stroke-width="3" fill="'+this.circleIconOptions.color+'" fill-opacity="0.65" /></svg>';
             var svgURL = "data:image/svg+xml;base64," + btoa(icon);
