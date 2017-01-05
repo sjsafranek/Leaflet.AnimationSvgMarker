@@ -235,17 +235,14 @@ L.AnimationSvgMarker = L.Marker.extend({
 
     setProperties: function(properties) {
         this.properties = properties;
-		var content = this._getPopupHtml();
 		if (this.hasOwnProperty("_popup")) {
-			if (!this._popup._isOpen) {
-				this._popup.setContent(content);
-			} else {
+			if (this._popup._isOpen) {
 		        for (var f in this.properties) {
 		        	$(this._popup._container).find('span[column_id="'+f+'"]').text(this.properties[f]);
 		        }
 			}
 		} else {
-			this.bindPopup(content);
+			this.bindPopup(this._getPopupHtml());
 		}
     },
 

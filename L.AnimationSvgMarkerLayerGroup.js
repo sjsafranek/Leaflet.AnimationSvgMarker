@@ -61,6 +61,22 @@ L.AnimationSvgMarkerLayerGroup = L.LayerGroup.extend({
     //     return Object.keys(this.alias).length;
     // },
 
+	onAdd: function (map) {
+		this._map = map;
+		this.eachLayer(map.addLayer, map);
+		
+		var self = this;
+		this._map.on('popupopen', function (e) {
+			var source = e.popup._source;
+			if (self._layers.hasOwnProperty(source._leaflet_id)) {
+				console.log(e.popup._source);
+				source._popup.setContent( 
+					source._getPopupHtml() 
+				);
+			}
+		});
+	},
+
     size: function() {
         return {
             "layers": Object.keys(this._layers).length,
