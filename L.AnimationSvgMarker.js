@@ -40,6 +40,7 @@ L.AnimationSvgMarker = L.Marker.extend({
         this.circleIconOptions.color = options.color || "#000000";
         this._map = null;
         this._updateIcon();
+        this.color = "#000000"
         L.Marker.prototype.initialize.call(this, latlng, options);
         this.on("add", function(){
             this.hideLabel();
@@ -248,12 +249,16 @@ L.AnimationSvgMarker = L.Marker.extend({
 
     changeColor: function(color, duration) {
         var self = this;
+        // check for same color
+        if (color == this.color) { return; }
         if (d3) {
             if (self._icon) {
+				this.color = color;
                 d3.select(self._icon.getElementsByTagName("circle")[0]).transition().duration(duration||1000).style("fill",  color).style("stroke",color);
                 d3.select(self._icon.getElementsByTagName("path")[0]).transition().duration(duration||1000).style("fill",  color).style("stroke",color);
             }
         } else {
+			this.color = color;
             this.markerIconOptions.color = color;
             this.circleIconOptions.color = color;
             this._updateIcon();
