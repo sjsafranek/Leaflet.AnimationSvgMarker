@@ -28,6 +28,7 @@
 
 		var map, marker;
 		var radius = 50;
+		var ms = 50;
 
 		document.addEventListener('DOMContentLoaded', function() {
 		   init();
@@ -60,7 +61,6 @@
 			}).setView([0,0], 2)
 
 			marker = L.animationsvgmarker(map.getCenter(), {
-				timestamp: new Date().getTime(),
 				color: "#FF0000",
 				type: "marker"
 			});
@@ -78,9 +78,9 @@
 
 			marker.setProperties({title:"i am moving!"});
 
-
 			setTimeout(function(){
 				marker.addToFadeIn(map);
+				marker.setlabelContent("I am a moving marker");
 				function animate(angle) {
 					if (angle%100 == 0) {
 						var n = Math.floor((Math.random() * rainbow.length));
@@ -91,16 +91,14 @@
 							L.latLng(
 								Math.cos(angle/100) * radius, 
 								Math.sin(angle/100) * radius
-							), 50);
+							), ms);
 						animate(angle+1);
-					}, 50);
+					}, ms);
 				}
 				animate(1);
 			}, 1250);
 
 		}
-
-
 
 		// var marker2 = L.animationsvgmarker(map.getCenter(), {
 		// 	color: "#FF0000"

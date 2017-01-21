@@ -2,9 +2,9 @@
 L.AnimationSvgMarker = L.Marker.extend({
 
     options: {
-        time_animation_treshold: 900,
         type: "circle",
-        color: "#000000"
+        color: "#000000",
+        transition_timing: "linear"
     },
 
     markerIconOptions: {
@@ -34,6 +34,7 @@ L.AnimationSvgMarker = L.Marker.extend({
         this.markerIconOptions.color = options.color || "#000000";
         this.circleIconOptions.color = options.color || "#000000";
         this._map = null;
+        this._colorLock = false;
         this._updateIcon();
         this.color = "#000000";
         L.Marker.prototype.initialize.call(this, latlng, options);
@@ -93,14 +94,13 @@ L.AnimationSvgMarker = L.Marker.extend({
     animate: function() {
         var self = this;
         if (self.path.length > 0) {
-            var transition_timing = "linear";
             var point = self.path.shift();
             // removed from map
 			if (!self._map){return;}
             var pt1 = self._map.latLngToLayerPoint(point.location);
             self._latlng = L.latLng(point.location);
             var seconds = point.duration/1000;
-            self._icon.style.transition = "transform "+seconds+"s "+transition_timing;
+            self._icon.style.transition = "transform "+seconds+"s "+this.options.transition_timing;
             self._icon.style.transform = "translate3d(" + pt1.x + "px, " + pt1.y + "px, 0px)";
             // popup 
             if (self.hasOwnProperty("_popup")) {
@@ -112,7 +112,7 @@ L.AnimationSvgMarker = L.Marker.extend({
                         }
                     };
                     if (!isHover) {
-                        self._popup._container.style.transition = "transform "+seconds+"s "+transition_timing;
+                        self._popup._container.style.transition = "transform "+seconds+"s "+this.options.transition_timing;
                         self._popup._container.style.transform  = "translate3d(" + pt1.x + "px, " + pt1.y + "px, 0px)";
                         self._popup._latlng = L.latLng(point);
                     }
@@ -130,7 +130,7 @@ L.AnimationSvgMarker = L.Marker.extend({
                 window.clearTimeout(self.timeoutLoop);
                 self.timeoutLoop = null;
                 self.animate();
-            }, point.duration);
+            }, point.duration+1);
         } else {
             window.clearTimeout(self.timeoutLoop);
             self.timeoutLoop = null;
@@ -192,19 +192,28 @@ L.AnimationSvgMarker = L.Marker.extend({
     changeColor: function(color, duration) {
         var self = this;
         // check for same color
+        if (this._colorLock) {this._colorPending = [color, duration];}
         if (color == this.color) { return; }
-        if (d3) {
-            if (self._icon) {
-				this.color = color;
-                d3.select(self._icon.getElementsByTagName("circle")[0]).transition().duration(duration||1000).style("fill",  color).style("stroke",color);
-                d3.select(self._icon.getElementsByTagName("path")[0]).transition().duration(duration||1000).style("fill",  color).style("stroke",color);
+        this._colorLock = true;
+        if (self._icon) {
+            this.color = color;
+            var seconds = duration/1000;
+            var svgElem = self._icon.getElementsByTagName("circle");
+            if (0 == svgElem.length) {
+                svgElem = self._icon.getElementsByTagName("path")
             }
-        } else {
-			this.color = color;
-            this.markerIconOptions.color = color;
-            this.circleIconOptions.color = color;
-            this._updateIcon();
+            svgElem[0].style.transition = "stroke "+seconds+"s ease, "+"fill "+seconds+"s ease";
+            svgElem[0].setAttribute("stroke", color);
+            svgElem[0].setAttribute("fill", color);
         }
+
+        setTimeout(function(){
+            self._colorLock = false;
+            if (self._colorPending) {
+                self.changeColor( self._colorPending[0], self._colorPending[1] );
+                self._colorPending = null;
+            }
+        }, duration);
     },
 
     addToFadeIn: function(map, milliseconds) {
@@ -315,4 +324,3 @@ L.AnimationSvgMarker = L.Marker.extend({
 L.animationsvgmarker = function(latlng, options) {
     return new L.AnimationSvgMarker(latlng, options);
 };
-
