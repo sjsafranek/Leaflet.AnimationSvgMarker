@@ -33,15 +33,15 @@ Queue.prototype.dequeue = function() {
 L.AnimationSvgMarkerLayerGroup = L.LayerGroup.extend({
 
     initialize: function (layers) {
+		self = this;
         this.alias = {};
         this.queue = new Queue();
         this.updateQueue = new Queue();
         this.lock = false;
-
+		this.show = true;
         this._layers = {};
 
         var i, len;
-
         if (layers) {
             for (i = 0, len = layers.length; i < len; i++) {
                 this.addLayer(layers[i]);
@@ -51,15 +51,8 @@ L.AnimationSvgMarkerLayerGroup = L.LayerGroup.extend({
         L.LayerGroup.prototype.initialize.call(layers);
 
         this.processUpdateQueue();
+
     },
-
-    // size_layers: function() {
-    //     return Object.keys(this._layers).length;
-    // },
-
-    // size_active: function() {
-    //     return Object.keys(this.alias).length;
-    // },
 
 	onAdd: function (map) {
 		this._map = map;
@@ -69,13 +62,21 @@ L.AnimationSvgMarkerLayerGroup = L.LayerGroup.extend({
 		this._map.on('popupopen', function (e) {
 			var source = e.popup._source;
 			if (self._layers.hasOwnProperty(source._leaflet_id)) {
-				console.log(e.popup._source);
 				source._popup.setContent( 
 					source._getPopupHtml() 
 				);
 			}
 		});
 	},
+
+    // size_layers: function() {
+    //     return Object.keys(this._layers).length;
+    // },
+
+    // size_active: function() {
+    //     return Object.keys(this.alias).length;
+    // },
+
 
     size: function() {
         return {
@@ -99,6 +100,11 @@ L.AnimationSvgMarkerLayerGroup = L.LayerGroup.extend({
 
     addMarker: function(key, latLng, options) {
         var self = this;
+        
+        if (!this.show) {
+			return;
+		}
+        
         if (this.lock) {
             self.updateQueue.enqueue({"key":key, "latLng":latLng, "options":options})
             return;
@@ -155,27 +161,10 @@ L.AnimationSvgMarkerLayerGroup = L.LayerGroup.extend({
             this.alias[key] = id;
 
             // fade marker in
-            this._layers[id]._icon.style.transition = "transform 0s";
-            if (self._layers[id].hasOwnProperty("label")) {
-                self._layers[id].label._container.style.transition = "transform 0s";
-            }
             this._layers[id].setLatLng(latLng);
-            // this._layers[id].moveTo(latLng, 10, 0);
-
-            this._layers[id]._icon.classList.add("markerFadeIn");
-            this._layers[id]._icon.classList.remove("markerInvisible");
-            this._layers[id].label._container.classList.remove("markerInvisible");
-
-            setTimeout(function(){
-                if (self._layers[id]._icon) {
-                    self._layers[id]._icon.classList.remove("markerFadeIn");
-                }
-            }, 500);
-
-            setTimeout(function() {
-                self._layers[id]._icon.classList.remove("markerInvisible");
-                self._layers[id].label._container.classList.remove("markerInvisible");
-            }, 1000);
+            
+            //this._layers[id].addToFadeIn(this._map);
+            this._layers[id].showFadeIn();
 
             // return recycled marker
             return this._layers[this.alias[key]];
@@ -191,31 +180,11 @@ L.AnimationSvgMarkerLayerGroup = L.LayerGroup.extend({
         if (this.alias.hasOwnProperty(key)) {
             var id = this.alias[key];
             delete this.alias[key];
-
-            if (this._layers[id]._icon) {
-                this._layers[id]._icon.classList.add("markerFadeOut");
-            }
-            if (this._layers[id].hasOwnProperty("label")) {
-                this._layers[id].label._container.classList.add("markerFadeOut");
-            }
-
+			this._layers[id].hideFadeOut();
             setTimeout(function(){
-                if (self._layers[id].hasOwnProperty("_popup")) {
-                    if (self._layers[id]._popup._isOpen) {
-                        self._layers[id].closePopup();
-                    }
-                }
-                self._layers[id]._icon.classList.remove("markerFadeOut");
-                self._layers[id]._icon.classList.add("markerInvisible");
-                if (self._layers[id].hasOwnProperty("label")) {
-                    self._layers[id].hideLabel();
-                    self._layers[id].label._container.classList.remove("markerFadeOut");
-                    self._layers[id].label._container.classList.remove("markerInvisible");
-                    window.clearTimeout(self._layers[id].timeoutLoop);
-                    self._layers[id].timeoutLoop = null;
-                    self._layers[id].path = [];
-                    self.queue.enqueue(id);
-                }
+				if (self._layers.hasOwnProperty(id)) {
+					self.queue.enqueue(id);
+				}
             }, 1000);
 
         }
@@ -245,54 +214,19 @@ L.AnimationSvgMarkerLayerGroup = L.LayerGroup.extend({
     destroyAllMarkers: function() {
         var self = this
         this.lock = true;
-        while (Object.keys(this._layers) != 0) {
-            this.destroyMarker(Object.keys(this._layers)[0]);
-        }
+
+		for (var i in this._layers) {
+			if (this._layers.hasOwnProperty(i)) {
+				this.removeLayer(i);
+			}
+		}
+		
         this.alias = {};
         setTimeout(function(){
             self.lock = false;
         },1250);
-        // this.lock = false;
+
     }
 
 });
-
-
-
-
-
-
-/*
-
-var g = new L.AnimationSvgMarkerLayerGroup();
-g.addTo(map);
-g.addMarker("test2", L.latLng([-20,-20]), {timestamp: 10, type:"circle"});
-g.getMarker("test2").moveTo(L.latLng(30,70),1250);
-
-g.removeMarker("test2")
-
-g.addMarker("test3", L.latLng([-20,-20]), {timestamp: 10, type:"circle"});
-
-
-
-
-
-event.target._leaflet_id
-
-
-
-
-g.addMarker("test1", L.latLng([20,20]), {timestamp: 10, type:"marker"})
-g.addMarker("test2", L.latLng([-20,-20]), {timestamp: 10, type:"circle"})
-g.getMarker("test1")
-g.getMarker("test2")
-
-g.getMarker("test2").moveTo(L.latLng(30,70),10)
-
-
-
-
-
-*/
-
 

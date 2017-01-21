@@ -3,7 +3,7 @@ L.AnimationSvgMarker = L.Marker.extend({
 
     options: {
         time_animation_treshold: 900,
-        type: "circle", // marker
+        type: "circle",
         color: "#000000"
     },
 
@@ -11,9 +11,7 @@ L.AnimationSvgMarker = L.Marker.extend({
         iconAnchor: [12, 24],
         iconSize: [22, 35],
         shadowAnchor: [18, 46],
-        // shadowAnchor: [22, 46],
         shadowSize: [54, 51],
-        shadowUrl: "images/marker-shadow.png",
         popupAnchor: [0, -17],
         viewBox: '0 0 32 52',
         color: "#000000",
@@ -22,7 +20,6 @@ L.AnimationSvgMarker = L.Marker.extend({
 
     circleIconOptions: {
         iconSize: [22, 35],
-        // iconAnchor: [10, 18],
         iconAnchor: [11, 18],
         popupAnchor: [0, 0],
         viewBox: '0 0 50 50',
@@ -31,28 +28,18 @@ L.AnimationSvgMarker = L.Marker.extend({
     },
 
     initialize: function (latlng, options) {
-        // L.setOptions(this, options);
         L.Util.setOptions(this, options);
         this.path = [];
         this.timeoutLoop = null;
-        this.last_movement_timestamp = options.timestamp || 0;
         this.markerIconOptions.color = options.color || "#000000";
         this.circleIconOptions.color = options.color || "#000000";
         this._map = null;
         this._updateIcon();
-        this.color = "#000000"
+        this.color = "#000000";
         L.Marker.prototype.initialize.call(this, latlng, options);
         this.on("add", function(){
             this.hideLabel();
         });
-
-        // add label
-        if ("marker" == this.options.type) {
-            this.bindLabel("", { noHide: true });
-        }
-        else if ("circle" == this.options.type) { 
-            this.bindLabel("", { noHide: true, offset:[14,-17] });
-        }
 
         this.on("click",function(){
             var self = this;
@@ -66,7 +53,6 @@ L.AnimationSvgMarker = L.Marker.extend({
                     },1000);
                 },8000);
             }
-            // fadeOutClosePopup();
             setTimeout(function(){
                 self._popup._container.onmouseenter = function(){
                     clearTimeout(self._popup.fadeTimeout);
@@ -79,60 +65,43 @@ L.AnimationSvgMarker = L.Marker.extend({
                     self._popup._container.style.transition = "transform 0.75s";
                     self._popup._container.style.transform  = "translate3d(" + pt1.x + "px, " + pt1.y + "px, 0px)";
                     self._popup._latlng = L.latLng(point);
-                    // fadeOutClosePopup();
                 }
             },100);
         });
 
     },
 
-    moveTo: function(destination, milliseconds, event_timestamp) {
+    moveTo: function(destination, milliseconds) {
         if (!milliseconds) {
             milliseconds = 1000;
         }
         if (this.path.length == 0) {
             if (this.getLatLng().lat != destination.lat || this.getLatLng().lng != destination.lng) {
-                this.last_movement_timestamp = event_timestamp || this.last_movement_timestamp+1;
                 this.path.push({location:destination, duration:milliseconds});
             }
         } else {
             var l = this.path.length-1;
             if (this.path[l].lat != destination.lat || this.path[l].lng != destination.lng) {
-                this.last_movement_timestamp = event_timestamp || this.last_movement_timestamp+1;
                 this.path.push({location:destination, duration:milliseconds});
             }
         }
         if (!this.timeoutLoop) {
             this.animate();
         }
-
     },
-    
+
     animate: function() {
         var self = this;
         if (self.path.length > 0) {
             var transition_timing = "linear";
             var point = self.path.shift();
+            // removed from map
+			if (!self._map){return;}
             var pt1 = self._map.latLngToLayerPoint(point.location);
             self._latlng = L.latLng(point.location);
             var seconds = point.duration/1000;
             self._icon.style.transition = "transform "+seconds+"s "+transition_timing;
             self._icon.style.transform = "translate3d(" + pt1.x + "px, " + pt1.y + "px, 0px)";
-            if (self._shadow) {
-                self._shadow.style.transition = "transform "+seconds+"s "+transition_timing;
-                self._shadow.style.transform = "translate3d(" + pt1.x + "px, " + pt1.y + "px, 0px)";
-            }
-            // label
-            if (self.hasOwnProperty("label")) {
-                self.label._latlng = L.latLng(point.location);
-                self.label._container.style.transition = "transform "+seconds+"s "+transition_timing;
-                if ("marker" == self.options.type) {
-					self.label._container.style.transform = "translate3d(" + (pt1.x+21) + "px, " + (pt1.y-35) + "px, 0px)";
-                }
-                else if ("circle" == self.options.type) {
-					self.label._container.style.transform = "translate3d(" + (pt1.x+14) + "px, " + (pt1.y-17) + "px, 0px)";
-				}
-            }
             // popup 
             if (self.hasOwnProperty("_popup")) {
                 if (self._popup.hasOwnProperty("_container") ) {
@@ -153,12 +122,6 @@ L.AnimationSvgMarker = L.Marker.extend({
                 if (self._icon) {
                     self._icon.style.transition = "transform 0s";
                 }
-                if (self._shadow) {
-                    self._shadow.style.transition = "transform 0s";
-                }
-                if (self.hasOwnProperty("label")) {
-                    self.label._container.style.transition = "transform 0s";
-                }
                 if (self.hasOwnProperty("_popup")) {
                     if (self._popup.hasOwnProperty("_container")) {
                         self._popup._container.style.transition = "transform 0s";
@@ -174,33 +137,11 @@ L.AnimationSvgMarker = L.Marker.extend({
         }
     },
 
-    updateLabel: function(text) {
-        var self = this;
-        if (!this.hasOwnProperty("label")) {
-            this.bindLabel(text, { noHide: true });
-            this.showLabel();
-        } else {
-            this.label.setContent(""+text);
-            this.showLabel();
-        }
-        this.label._container.classList.add("markerInvisible");
-        this.label._container.classList.add("markerFadeIn");
-        this.label._container.classList.remove("markerInvisible");
-        setTimeout(function(){
-            if (self.hasOwnProperty("label")) {
-                self.label._container.classList.remove("markerFadeIn");
-            }
-        }, 500);
-    },
-
     // popup
     _getPopupHtml: function() {
-        // TODO :: update pieces of the popup!
-        // TODO :: update pieces of the popup!
-        // TODO :: update pieces of the popup!
         var popup_content = "<div class='popup_container'>";
         for (var f in this.properties) {
-            popup_content += "<label>" + f + "</label>: " + this.properties[f] + "<br>";
+            popup_content += "<label>" + f + "</label>: <span column_id='"+f+"'>" + this.properties[f] + "</span><br>";
         }
         popup_content += "</div>";
         return popup_content;
@@ -215,8 +156,8 @@ L.AnimationSvgMarker = L.Marker.extend({
                      + 'xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">'
                      + '<path d="' + this.markerIconOptions.symbol + '" fill="' + this.markerIconOptions.color + '" stroke="' + this.markerIconOptions.color + '" fill-opacity="0.65" stroke-width="3"></path></svg>';            
             this.markerIconOptions.html = icon;
+            this.markerIconOptions.html = icon + '<span class="markerLabel markerInvisible"></span>';
             this.markerIconOptions.className = 'svgIcon';
-            // var myIcon = new DivIconWithShadow(this.options.markerIconOptions);
             var myIcon = new L.DivIcon(this.markerIconOptions);
             this.setIcon(myIcon);
         }
@@ -226,7 +167,8 @@ L.AnimationSvgMarker = L.Marker.extend({
                  + 'xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">'
                  + '<circle cx="25" cy="25" r="'+this.circleIconOptions.radius+'" stroke="'+this.circleIconOptions.color+'" stroke-width="3" fill="'+this.circleIconOptions.color+'" fill-opacity="0.65" /></svg>';
             var svgURL = "data:image/svg+xml;base64," + btoa(icon);
-            this.circleIconOptions.html = icon;
+            //this.circleIconOptions.html = icon;
+            this.circleIconOptions.html = icon + '<span class="markerLabel markerInvisible"></span>';
             this.circleIconOptions.className = 'svgIcon';
             var myIcon = new L.DivIcon(this.circleIconOptions);
             this.setIcon(myIcon);
@@ -270,26 +212,31 @@ L.AnimationSvgMarker = L.Marker.extend({
         var duration = milliseconds || 500;
         self.addTo(map);
         self._map = map;
-        if (self.hasOwnProperty("label")) {
-            self.hideLabel();
-        }
+		self.hideLabel();
         self._icon.classList.add("markerInvisible");
         self._icon.classList.add("markerFadeIn");
         self._icon.classList.remove("markerInvisible");
-        if (self._shadow) {
-            self._shadow.classList.add("markerInvisible");
-            self._shadow.classList.add("markerFadeIn");
-            self._shadow.classList.remove("markerInvisible");
-        }
         setTimeout(function(){
             if (self._icon) {
                 self._icon.classList.remove("markerFadeIn");
             }
-            if (self._shadow) {
-                self._shadow.classList.remove("markerFadeIn");
+        }, duration);
+    },
+
+	showFadeIn: function(milliseconds) {
+        var self = this;
+        var duration = milliseconds || 500;
+		self.hideLabel();
+        self._icon.classList.add("markerInvisible");
+        self._icon.classList.add("markerFadeIn");
+        self._icon.classList.remove("markerInvisible");
+        setTimeout(function(){
+            if (self._icon) {
+                self._icon.classList.remove("markerFadeIn");
             }
         }, duration);
     },
+
 
     removeFadeOut: function(milliseconds) {
         var duration = milliseconds || 1000;
@@ -297,67 +244,70 @@ L.AnimationSvgMarker = L.Marker.extend({
         if (self._icon) {
             self._icon.classList.add("markerFadeOut");
         }
-        if (self._shadow) {
-            self._shadow.classList.add("markerFadeOut");
-        }
-        if (self.hasOwnProperty("label")) {
-            self.label._container.classList.add("markerFadeOut");
-        }
+		self.hideLabel();
         setTimeout(function(){
             self._icon.classList.remove("markerFadeOut");
-            if (self._shadow) {
-                self._shadow.classList.remove("markerFadeOut");
-            }
             if (self._map) {
                 self._map.removeLayer(self);
-            }
-            if (self.hasOwnProperty("label")) {
-                self.hideLabel();
-                self.label._container.classList.remove("markerFadeOut");
             }
             clearTimeout(self.timeoutLoop);
             self.path = [];
         }, duration);
     },
 
-    utils: {
+	hideFadeOut: function(milliseconds) {
+        var duration = milliseconds || 1000;
+        var self = this;
+		if (this._icon) {
+			this._icon.classList.add("markerFadeOut");
+		}
+		self.hideLabel();
+		setTimeout(function(){
+			if (self.hasOwnProperty("_popup")) {
+				if (self._popup._isOpen) {
+					self.closePopup();
+				}
+			}
+			self._icon.classList.remove("markerFadeOut");
+			self._icon.classList.add("markerInvisible");
+			window.clearTimeout(self.timeoutLoop);
+			self.timeoutLoop = null;
+			self.path = [];
+		}, duration);
+	},
 
-        convertTime: function(timestamp) {
-            var TIME = new Date( timestamp * 1000 );
-            // Left pad w/ 0's
-            var d = ("0" + (TIME.getMonth()+1)).slice(-2) + "/" 
-                  + ("0" + TIME.getDate()).slice(-2) + "/" 
-                  + TIME.getFullYear() + " " 
-                  + ("0" + TIME.getHours()).slice(-2) + ":" 
-                  + ("0" + TIME.getMinutes()).slice(-2) +  ":" 
-                  + ("0" + TIME.getSeconds()).slice(-2);
-            return d;
-        },
-
-        convertTimeUTC: function(timestamp) {
-            var TIME = new Date( timestamp * 1000 );
-            // Left pad w/ 0's
-            var d = ("0" + (TIME.getUTCMonth()+1)).slice(-2) + "/" 
-                  + ("0" + TIME.getUTCDate()).slice(-2) + "/" 
-                  + TIME.getUTCFullYear() + " " 
-                  + ("0" + TIME.getUTCHours()).slice(-2) + ":" 
-                  + ("0" + TIME.getUTCMinutes()).slice(-2) +  ":" 
-                  + ("0" + TIME.getUTCSeconds()).slice(-2);
-            return d;
-        },
-
-        /**
-         * Returns a random integer between min (inclusive) and max (inclusive)
-         * Using Math.round() will give you a non-uniform distribution!
-         */
-        getRandomInt: function(min, max) {
-            return Math.floor(Math.random() * (max - min + 1)) + min;
-        },
-
-        getDelay: function(x) {var n=(-30*x)+150; return n;}
-
-    }
-
+	setlabelContent: function(text) {
+		if (text != this._icon.getElementsByTagName("span")[0].innerText) {
+			this._icon.getElementsByTagName("span")[0].innerText = text;
+		}
+	},
+	
+	showLabel: function(milliseconds) {
+		if ( -1 == this._icon.getElementsByTagName("span")[0].classList.value.indexOf("markerInvisible") ) {
+			return;
+		}
+		var self = this;
+		var duration = milliseconds || 1000;
+		this._icon.getElementsByTagName("span")[0].classList.add("markerInvisible");
+		this._icon.getElementsByTagName("span")[0].classList.add("markerFadeIn");
+		this._icon.getElementsByTagName("span")[0].classList.remove("markerInvisible");
+        setTimeout(function(){
+			self._icon.getElementsByTagName("span")[0].classList.remove("markerFadeIn");
+        }, duration);
+	},
+	
+	hideLabel: function(milliseconds) {
+		if ( -1 != this._icon.getElementsByTagName("span")[0].classList.value.indexOf("markerInvisible") ) {
+			return;
+		}
+		var self = this;
+		var duration = milliseconds || 1000;
+		this._icon.getElementsByTagName("span")[0].classList.add("markerFadeOut");
+		setTimeout(function(){
+			self._icon.getElementsByTagName("span")[0].classList.add("markerInvisible");
+			self._icon.getElementsByTagName("span")[0].classList.remove("markerFadeOut");
+		}, duration);
+	}
 
 });
 
@@ -365,83 +315,4 @@ L.AnimationSvgMarker = L.Marker.extend({
 L.animationsvgmarker = function(latlng, options) {
     return new L.AnimationSvgMarker(latlng, options);
 };
-
-
-
-
-
-
-// http://bl.ocks.org/zross/9c0452908dcf6d040894
-
-DivIconWithShadow = L.DivIcon.extend({
-
-    _createImg: function (src, el) {
-        el = el || document.createElement('img');
-        el.src = src;
-        return el;
-    },
-
-    _getIconUrl: function (name) {
-        return this.options[name + 'Url'];
-    },
-
-    createShadow: function () {
-        var src = "images/marker-shadow.png";
-        var img = this._createImg(src);
-        this._setIconStyles(img, 'shadow');
-        return img;
-    },
-
-    _setIconStyles: function (img, name) {
-        var options = this.options,
-            size = L.point(options[name === 'shadow' ? 'shadowSize' : 'iconSize']),
-            anchor;
-
-        if (name === 'shadow') {
-            anchor = L.point(options.shadowAnchor || options.iconAnchor);
-        } else {
-            anchor = L.point(options.iconAnchor);
-        }
-
-        if (!anchor && size) {
-            anchor = size.divideBy(2, true);
-        }
-
-        img.className = 'awesome-marker-' + name + ' ' + options.className;
-
-        if (anchor) {
-            img.style.marginLeft = (-anchor.x) + 'px';
-            img.style.marginTop  = (-anchor.y) + 'px';
-        }
-
-        if (size) {
-            img.style.width  = size.x + 'px';
-            img.style.height = size.y + 'px';
-        }
-    }
-
-
-});
-
-
-
-
-    /**
-     * Returns a random integer between min (inclusive) and max (inclusive)
-     * Using Math.round() will give you a non-uniform distribution!
-     */
-    // function getRandomInt(min, max) {
-    //     return Math.floor(Math.random() * (max - min + 1)) + min;
-    // }
-
-    // function getDelay(x) {
-    //     var delay = self.animation.delayTimes[self.animation.delayTimes.length-1];
-    //     var n = (-15*delay.stdev*Math.pow(x,2)) + delay.mean;
-    //     return n;
-    // }
-
-    // var delay = getDelay(marker.path.length);
-    // var transform_time = 1250+delay-100;
-    // marker.moveTo(latlng, transform_time, feature.properties.event_timestamp);
-
 
