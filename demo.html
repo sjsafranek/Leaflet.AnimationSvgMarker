@@ -7,7 +7,7 @@
 		<meta name="viewport" content="width=device-width, initial-scale=1">
 		<link rel="stylesheet" href="leaflet.css" />
 		<script src="leaflet-src.js"></script>
-		<script src="d3.v4.js"></script>
+		<!-- <script src="d3.v4.js"></script> -->
 		<style>
 			#map {
 				position: absolute; 
@@ -130,8 +130,12 @@
 					setTimeout(function(){
 						marker.moveTo(
 							L.latLng(
-								Math.cos(angle/100) * radius, 
-								Math.sin(angle/100) * radius
+								Math.sin(angle/100) * radius, 
+								Math.sin(angle/50) * radius
+								
+								//Math.cos(angle/100) * radius, 
+								//Math.sin(angle/100) * radius
+							
 							), ms);
 						angle += 1;
 						animate();
