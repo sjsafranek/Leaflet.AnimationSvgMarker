@@ -109,8 +109,8 @@ L.AnimationSvgMarker = L.Marker.extend({
         var self = this;
 
         // TESTING
-        this.animate2();
-        return;
+        //this.animate2();
+        //return;
 
         if (self.path.length > 0) {
             var point = self.path.shift();
