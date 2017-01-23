@@ -29,6 +29,17 @@
 		var map, marker;
 		var radius = 50;
 		var ms = 50;
+		// Colors of the rainbow
+		var rainbow = [
+			"#9400D3", // Violet
+			"#4B0082", // Indigo
+			"#0000FF", // Blue
+			"#00FF00", // Green
+			"#FFFF00", // Yellow
+			"#FF7F00", // Orange
+			"#FF0000"  // Red
+		];
+
 
 		document.addEventListener('DOMContentLoaded', function() {
 		   init();
@@ -65,22 +76,14 @@
 				type: "marker"
 			});
 
-			// Colors of the rainbow
-			var rainbow = [
-				"#9400D3", // Violet
-				"#4B0082", // Indigo
-				"#0000FF", // Blue
-				"#00FF00", // Green
-				"#FFFF00", // Yellow
-				"#FF7F00", // Orange
-				"#FF0000"  // Red
-			];
-
 			marker.setProperties({title:"i am moving!"});
+			marker.addToFadeIn(map);
+
 
 			setTimeout(function(){
-				marker.addToFadeIn(map);
-				marker.setlabelContent("I am a moving marker");
+				return
+				//marker.addToFadeIn(map);
+				//marker.setlabelContent("I am a moving marker");
 				function animate(angle) {
 					if (angle%100 == 0) {
 						var n = Math.floor((Math.random() * rainbow.length));
@@ -98,7 +101,54 @@
 				animate(1);
 			}, 1250);
 
+/*
+				function animate(angle) {
+					marker.path.push({
+						location: L.latLng(
+							Math.cos(angle/100) * radius, 
+							Math.sin(angle/100) * radius
+						), 
+						duration: ms
+					});
+				}
+
+				for (var i=0; i<100; i++) {
+					animate(i);
+				}
+*/
 		}
+
+
+				var cont = true;
+				var angle = 1;
+				function animate() {
+					if (!cont) {return;}
+					if (angle%100 == 0) {
+						var n = Math.floor((Math.random() * rainbow.length));
+						marker.changeColor(rainbow[n], 2000);
+					}
+					setTimeout(function(){
+						marker.moveTo(
+							L.latLng(
+								Math.cos(angle/100) * radius, 
+								Math.sin(angle/100) * radius
+							), ms);
+						angle += 1;
+						animate();
+					}, ms);
+				}
+
+				function stop() {
+					cont = false;
+				}
+
+				function go() {
+					cont = true;
+					animate();
+				}
+
+
+
 
 		// var marker2 = L.animationsvgmarker(map.getCenter(), {
 		// 	color: "#FF0000"

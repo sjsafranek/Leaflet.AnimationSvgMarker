@@ -31,12 +31,21 @@ L.AnimationSvgMarker = L.Marker.extend({
         L.Util.setOptions(this, options);
         this.path = [];
         this.timeoutLoop = null;
+        
+        // set default colors
         this.markerIconOptions.color = options.color || "#000000";
         this.circleIconOptions.color = options.color || "#000000";
+        this.color = options.color || "#000000";
+
         this._map = null;
         this._colorLock = false;
         this._updateIcon();
-        this.color = "#000000";
+
+        // set stylesheet
+        this._stylesheet = document.createElement('style');
+        this._stylesheet.type = 'text/css';
+        document.getElementsByTagName('head')[0].appendChild(this._stylesheet);
+
         L.Marker.prototype.initialize.call(this, latlng, options);
         this.on("add", function(){
             this.hideLabel();
@@ -44,6 +53,7 @@ L.AnimationSvgMarker = L.Marker.extend({
 
         this.on("click",function(){
             var self = this;
+            console.log("click");
             function fadeOutClosePopup() {
                 clearTimeout(self._popup.fadeTimeout);
                 self._popup.fadeTimeout = setTimeout(function() {
@@ -72,6 +82,10 @@ L.AnimationSvgMarker = L.Marker.extend({
 
     },
 
+    setStylesheet: function(css) {
+        this._stylesheet.innerHTML = css;
+    },
+
     moveTo: function(destination, milliseconds) {
         if (!milliseconds) {
             milliseconds = 1000;
@@ -93,6 +107,11 @@ L.AnimationSvgMarker = L.Marker.extend({
 
     animate: function() {
         var self = this;
+
+        // TESTING
+        this.animate2();
+        return;
+
         if (self.path.length > 0) {
             var point = self.path.shift();
             // removed from map
@@ -130,7 +149,7 @@ L.AnimationSvgMarker = L.Marker.extend({
                 window.clearTimeout(self.timeoutLoop);
                 self.timeoutLoop = null;
                 self.animate();
-            }, point.duration+1);
+            }, point.duration);
         } else {
             window.clearTimeout(self.timeoutLoop);
             self.timeoutLoop = null;
@@ -155,7 +174,7 @@ L.AnimationSvgMarker = L.Marker.extend({
             var icon = '<svg class="symbol shadow" width="' + this.markerIconOptions.iconSize[0] + 'px" height="' + this.markerIconOptions.iconSize[1] + 'px" viewBox="' + this.markerIconOptions.viewBox + '" version="1.1" ' 
                      + 'xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">'
                      + '<path d="' + this.markerIconOptions.symbol + '" fill="' + this.markerIconOptions.color + '" stroke="' + this.markerIconOptions.color + '" fill-opacity="0.65" stroke-width="3"></path></svg>';            
-            this.markerIconOptions.html = icon;
+            //this.markerIconOptions.html = icon;
             this.markerIconOptions.html = icon + '<span class="markerLabel markerInvisible"></span>';
             this.markerIconOptions.className = 'svgIcon';
             var myIcon = new L.DivIcon(this.markerIconOptions);
@@ -316,7 +335,96 @@ L.AnimationSvgMarker = L.Marker.extend({
 			self._icon.getElementsByTagName("span")[0].classList.add("markerInvisible");
 			self._icon.getElementsByTagName("span")[0].classList.remove("markerFadeOut");
 		}, duration);
-	}
+	},
+
+
+
+    animate2: function() {
+        var self = this;
+        // get function start time
+        var start_time = new Date();
+        // check if marker has been removed from map
+        if (!self._map){return;}
+        // get current path length
+        var n = self.path.length;
+        if (n > 0) {
+            // loop through path array
+            // calculate variables for animation frame
+            var total_runtime = 0;
+            var positions = [];
+            for (var i=0; i < n; i++) {
+                // slice points out of path queue
+                var point = self.path.shift();
+                // calculate animation runtime
+                point.duration = (point.duration/1000);
+                total_runtime += point.duration;
+                // if last item set marker latLng to location
+                if (i == n-1) {
+                    self._latlng = L.latLng(point.location);
+                }
+                // store point in positions array
+                positions.push(point);
+            }
+
+            // form a single animation frame
+            var total_playtime = 0;
+            var keyFrames = '@keyframes AnimationSvgMarker_'+this._leaflet_id+' {\n';
+            for (var i in positions) {
+                total_playtime += positions[i].duration;
+                frame_time = parseInt(total_playtime/total_runtime*100);
+                var pt1 = self._map.latLngToLayerPoint(positions[i].location);
+                keyFrames += frame_time+'% { transform: translate3d(' + pt1.x + 'px, ' + pt1.y + 'px, 0px); }\n';
+            }
+            keyFrames += '}';
+
+            // set marker style sheet
+            marker.setStylesheet(keyFrames);
+            marker._icon.style.animation = 'AnimationSvgMarker_'+this._leaflet_id+' '+total_runtime+'s 1';  // this.options.transition_timing
+
+/*
+            // popup 
+            if (self.hasOwnProperty("_popup")) {
+                if (self._popup.hasOwnProperty("_container") ) {
+                    var isHover = false;
+                    for (var i=0; i < self._popup._container.classList.length; i++) {
+                        if (self._popup._container.classList[i] == "hover") { 
+                            isHover=true; 
+                        }
+                    };
+                    if (!isHover) {
+                        self._popup._container.style.transition = "transform "+seconds+"s "+this.options.transition_timing;
+                        self._popup._container.style.transform  = "translate3d(" + pt1.x + "px, " + pt1.y + "px, 0px)";
+                        self._popup._latlng = L.latLng(point);
+                    }
+                }
+            }
+*/
+
+            var end_time = new Date();
+            self.timeoutLoop = setTimeout(function(){
+                var pt1 = self._map.latLngToLayerPoint(self._latlng);
+                self._icon.style.transition = "transform 0s "+self.options.transition_timing;
+                self._icon.style.transform = "translate3d(" + pt1.x + "px, " + pt1.y + "px, 0px)";
+                //if (self._icon) {
+                //    self._icon.style.transition = "transform 0s";
+                //}
+                if (self.hasOwnProperty("_popup")) {
+                    if (self._popup.hasOwnProperty("_container")) {
+                        self._popup._container.style.transition = "transform 0s";
+                    }
+                }
+                window.clearTimeout(self.timeoutLoop);
+                self.timeoutLoop = null;
+                self.animate();
+            }, total_runtime+(end_time-start_time));
+
+        } else {
+            window.clearTimeout(self.timeoutLoop);
+            self.timeoutLoop = null;
+        }
+    }
+
+
 
 });
 
@@ -324,3 +432,34 @@ L.AnimationSvgMarker = L.Marker.extend({
 L.animationsvgmarker = function(latlng, options) {
     return new L.AnimationSvgMarker(latlng, options);
 };
+
+
+
+/*
+
+
+
+var keyFrames = '\
+@keyframes markerAnimation {\
+    10% {\
+        transform: translate3d(386px, 347px, 0px);\
+    }\
+    30% {\
+        transform: translate3d(386px, 347px, 0px);\
+    }\
+    60% {\
+       transform:  translate3d(406px, 307px, 0px);\
+    }\
+    90% {\
+        transform: translate3d(306px, 347px, 0px);\
+    }\
+}';
+marker.setStylesheet(keyFrames);
+marker._icon.style.animation = "markerAnimation 1.25s 1";
+
+
+
+
+
+
+*/
