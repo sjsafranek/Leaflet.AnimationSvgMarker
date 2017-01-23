@@ -378,8 +378,8 @@ L.AnimationSvgMarker = L.Marker.extend({
             keyFrames += '}';
 
             // set marker style sheet
-            marker.setStylesheet(keyFrames);
-            marker._icon.style.animation = 'AnimationSvgMarker_'+this._leaflet_id+' '+total_runtime+'s 1';  // this.options.transition_timing
+            self.setStylesheet(keyFrames);
+            self._icon.style.animation = 'AnimationSvgMarker_'+this._leaflet_id+' '+total_runtime+'s 1';  // this.options.transition_timing
 
 /*
             // popup 
