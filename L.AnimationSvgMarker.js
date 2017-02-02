@@ -109,8 +109,9 @@ L.AnimationSvgMarker = L.Marker.extend({
         var self = this;
 
         // TESTING
-        //this.animate2();
+        //this.animate_path();
         //return;
+		//var start_time = new Date();
 
         if (self.path.length > 0) {
             var point = self.path.shift();
@@ -137,6 +138,10 @@ L.AnimationSvgMarker = L.Marker.extend({
                     }
                 }
             }
+            
+            //var runtime = new Date() - start_time;
+            //console.log(runtime);
+            
             self.timeoutLoop = setTimeout(function(){
                 if (self._icon) {
                     self._icon.style.transition = "transform 0s";
@@ -149,6 +154,7 @@ L.AnimationSvgMarker = L.Marker.extend({
                 window.clearTimeout(self.timeoutLoop);
                 self.timeoutLoop = null;
                 self.animate();
+            //}, point.duration + runtime);
             }, point.duration);
         } else {
             window.clearTimeout(self.timeoutLoop);
@@ -213,6 +219,7 @@ L.AnimationSvgMarker = L.Marker.extend({
         // check for same color
         if (this._colorLock) {this._colorPending = [color, duration];}
         if (color == this.color) { return; }
+        duration = duration || 1000;
         this._colorLock = true;
         if (self._icon) {
             this.color = color;
@@ -339,7 +346,7 @@ L.AnimationSvgMarker = L.Marker.extend({
 
 
 
-    animate2: function() {
+    animate_path: function() {
         var self = this;
         // get function start time
         var start_time = new Date();
