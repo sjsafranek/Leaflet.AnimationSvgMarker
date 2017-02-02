@@ -111,7 +111,7 @@ L.AnimationSvgMarker = L.Marker.extend({
         // TESTING
         //this.animate_path();
         //return;
-		//var start_time = new Date();
+		var start_time = new Date();
 
         if (self.path.length > 0) {
             var point = self.path.shift();
@@ -139,8 +139,8 @@ L.AnimationSvgMarker = L.Marker.extend({
                 }
             }
             
-            //var runtime = new Date() - start_time;
-            //console.log(runtime);
+            var runtime = new Date() - start_time;
+            console.log(runtime);
             
             self.timeoutLoop = setTimeout(function(){
                 if (self._icon) {

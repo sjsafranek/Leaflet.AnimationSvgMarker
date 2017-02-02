@@ -37,6 +37,7 @@ L.AnimationSvgMarkerLayerGroup = L.LayerGroup.extend({
         this.alias = {};
         this.queue = new Queue();
         this.updateQueue = new Queue();
+        this.updateQueueInterval;
         this.lock = false;
 		this.show = true;
         this._layers = {};
@@ -88,12 +89,18 @@ L.AnimationSvgMarkerLayerGroup = L.LayerGroup.extend({
 
     processUpdateQueue: function() {
         var self = this;
-        setInterval(function(){
+        self.updateQueueInterval = setInterval(function(){
+			console.log("[DEBUG]: updateQueue ", self.updateQueue.size());
             if (!self.lock) {
                 if (self.updateQueue.size() != 0) {
                     var data = self.updateQueue.dequeue();
                     self.addMarker(data.key,data.latLng,data.options);
                 }
+                else {
+					clearTimeout(self.updateQueueInterval);
+					self.updateQueueInterval = null;
+					return;
+				}
             }
         }, 50);
     },
@@ -106,7 +113,8 @@ L.AnimationSvgMarkerLayerGroup = L.LayerGroup.extend({
 		}
         
         if (this.lock) {
-            self.updateQueue.enqueue({"key":key, "latLng":latLng, "options":options})
+            self.updateQueue.enqueue({"key":key, "latLng":latLng, "options":options});
+            self.processUpdateQueue();
             return;
         }
 
