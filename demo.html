@@ -29,6 +29,7 @@
 		var map, marker;
 		var radius = 50;
 		var ms = 50;
+
 		// Colors of the rainbow
 		var rainbow = [
 			"#9400D3", // Violet
@@ -42,10 +43,6 @@
 
 
 		document.addEventListener('DOMContentLoaded', function() {
-		   init();
-		});
-
-		function init() {
 
 			var defaultLayer =  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
 				attribution: '&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors',
@@ -77,79 +74,43 @@
 			});
 
 			marker.setProperties({title:"i am moving!"});
-			marker.addToFadeIn(map);
-
-
 			setTimeout(function(){
-				return
-				//marker.addToFadeIn(map);
-				//marker.setlabelContent("I am a moving marker");
-				function animate(angle) {
-					if (angle%100 == 0) {
-						var n = Math.floor((Math.random() * rainbow.length));
-						marker.changeColor(rainbow[n], 2000);
-					}
-					setTimeout(function(){
-						marker.moveTo(
-							L.latLng(
-								Math.cos(angle/100) * radius, 
-								Math.sin(angle/100) * radius
-							), ms);
-						animate(angle+1);
-					}, ms);
-				}
-				animate(1);
+				marker.addToFadeIn(map);
 			}, 1250);
 
-/*
-				function animate(angle) {
-					marker.path.push({
-						location: L.latLng(
-							Math.cos(angle/100) * radius, 
-							Math.sin(angle/100) * radius
-						), 
-						duration: ms
-					});
-				}
+		});
 
-				for (var i=0; i<100; i++) {
-					animate(i);
-				}
-*/
+
+
+		var cont = true;
+		var angle = 1;
+		function animate() {
+			if (!cont) {return;}
+			if (angle%100 == 0) {
+				var n = Math.floor((Math.random() * rainbow.length));
+				marker.changeColor(rainbow[n], 2000);
+			}
+			setTimeout(function(){
+				marker.moveTo(
+					L.latLng(
+						Math.sin(angle/100) * radius, 
+						Math.sin(angle/50) * radius
+						//Math.cos(angle/100) * radius, 
+						//Math.sin(angle/100) * radius
+					), ms);
+				angle += 1;
+				animate();
+			}, ms);
 		}
 
+		function stop() {
+			cont = false;
+		}
 
-				var cont = true;
-				var angle = 1;
-				function animate() {
-					if (!cont) {return;}
-					if (angle%100 == 0) {
-						var n = Math.floor((Math.random() * rainbow.length));
-						marker.changeColor(rainbow[n], 2000);
-					}
-					setTimeout(function(){
-						marker.moveTo(
-							L.latLng(
-								Math.sin(angle/100) * radius, 
-								Math.sin(angle/50) * radius
-								
-								//Math.cos(angle/100) * radius, 
-								//Math.sin(angle/100) * radius
-							
-							), ms);
-						angle += 1;
-						animate();
-					}, ms);
-				}
-
-				function stop() {
-					cont = false;
-				}
-
-				function go() {
-					cont = true;
-					animate();
-				}
+		function go() {
+			cont = true;
+			animate();
+		}
 
 
 
@@ -159,6 +120,19 @@
 		// });
 		// marker2.addTo(map)
 
+/*
+
+
+
+var markerGroup = new L.AnimationSvgMarkerLayerGroup();
+markerGroup.addTo(map);
+var loc = marker.getLatLng();
+markerGroup.addMarker("test", loc, {color:"#000"});
+
+
+
+
+*/
 
 	</script>	
 </html>

@@ -110,39 +110,27 @@ L.AnimationSvgMarkerLayerGroup = L.LayerGroup.extend({
 
 		var marker = this.getMarker(key);
 		if (marker) {
-            //marker._icon.classList.remove("markerInvisible");
             marker.showFadeIn();
-            return;
+            return marker;
         } 
        
         else if (this.queue.isEmpty()) {
-            // create new layer
-            var lyr = L.animationsvgmarker(latLng, options);
-            var id = this.getLayerId(lyr);
-            lyr.addToFadeIn(this._map);
+            // create new marker
+            var marker = this.newMarker(latLng, options);
 
-            // on map remove listener
-            lyr.on("remove", function(event) {
-                self.lock = true;
-                try { 
-                    self.removeLayer(this); 
-                }
-                catch(err){
-                    var id = this._leaflet_id;
-                    delete self._layers[id];
-                }
-                for (var i in self.alias) {
-                    if (self.alias[i] == id) {
-                        delete self.alias[i];
-                    }
-                }
-                self.lock = false;
-            });
+            // get marker layer_id
+            var id = this.getLayerId(marker);
 
-            this.addLayer(lyr);
+            // apply marker to map
+            marker.addToFadeIn(this._map);
+
+            // apply marker layer to layer group
+            this.addLayer(marker);
+
+            // add key to alias for lookup
             this.alias[key] = id;
-            return this._layers[this.alias[key]];
 
+            return marker;
         } 
         
         else {
@@ -151,7 +139,7 @@ L.AnimationSvgMarkerLayerGroup = L.LayerGroup.extend({
 			
 			// if `id` is null
 			if (!id) {
-				this.addMarker(key, latLng, options);
+				return this.addMarker(key, latLng, options);
 			}
 		
             // assign layer id to lookup table
@@ -166,6 +154,30 @@ L.AnimationSvgMarkerLayerGroup = L.LayerGroup.extend({
             // return recycled marker
             return this._layers[id];
         }
+    },
+
+    newMarker: function(latLng, options) {
+        var lyr = L.animationsvgmarker(latLng, options);
+
+        // on map remove listener
+        lyr.on("remove", function(event) {
+            self.lock = true;
+            try {
+                self.removeLayer(this); 
+            }
+            catch(err){
+                var id = this._leaflet_id;
+                delete self._layers[id];
+            }
+            for (var i in self.alias) {
+                if (self.alias[i] == id) {
+                    delete self.alias[i];
+                }
+            }
+            self.lock = false;
+        });
+
+        return lyr
     },
 
 	getLayerIdFromQueue: function() {
@@ -211,8 +223,10 @@ L.AnimationSvgMarkerLayerGroup = L.LayerGroup.extend({
 
     removeMarker: function(key) {
         var self = this;
-        if (this.hasMarker(key)) {
-            var id = this.alias[key];
+        //if (this.hasMarker(key)) {
+        var id = this.getLayerIdByKey(key);
+        if (id) {
+            // var id = this.alias[key];
             delete this.alias[key];
 			this._layers[id].hideFadeOut();
             setTimeout(function(){
