@@ -109,7 +109,7 @@ L.AnimationSvgMarkerLayerGroup = L.LayerGroup.extend({
         }
 
 		var marker = this.getMarker(key);
-		if(marker) {
+		if (marker) {
             //marker._icon.classList.remove("markerInvisible");
             marker.showFadeIn();
             return;
