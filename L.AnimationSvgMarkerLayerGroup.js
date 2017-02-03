@@ -72,6 +72,11 @@ L.AnimationSvgMarkerLayerGroup = L.LayerGroup.extend({
 		});
 	},
 
+	/**
+	 * @method			size
+	 * @description		returns length of alias, layers, and queue
+	 * @return			counts{object}
+	 */
     size: function() {
         return {
             "layers": Object.keys(this._layers).length,
@@ -105,7 +110,7 @@ L.AnimationSvgMarkerLayerGroup = L.LayerGroup.extend({
 				"options": options
 			});
             self.processUpdateQueue();
-            return;
+            return null;
         }
 
 		var marker = this.getMarker(key);
@@ -157,23 +162,29 @@ L.AnimationSvgMarkerLayerGroup = L.LayerGroup.extend({
     },
 
     newMarker: function(latLng, options) {
+		var self = this;
+
+		// create new animation marker
         var lyr = L.animationsvgmarker(latLng, options);
 
         // on map remove listener
         lyr.on("remove", function(event) {
             self.lock = true;
-            try {
-                self.removeLayer(this); 
-            }
-            catch(err){
-                var id = this._leaflet_id;
-                delete self._layers[id];
-            }
+            
+            // get layer leaflet_id
+            var id = this._leaflet_id;
+            
+            // remove marker layer from group
+            try { self.removeLayer(this); }
+            catch(err){ delete self._layers[id]; }
+            
+            // clean layer id from alias lookup table
             for (var i in self.alias) {
                 if (self.alias[i] == id) {
                     delete self.alias[i];
                 }
             }
+            
             self.lock = false;
         });
 
@@ -197,6 +208,12 @@ L.AnimationSvgMarkerLayerGroup = L.LayerGroup.extend({
 		}
 
 		return id;
+	},
+
+	_clearMarkerAlias: function(key) {
+		if (this.hasMarker(key)) {
+			delete self.alias[key];
+		}
 	},
 
 	hasMarker: function(key) {
@@ -223,27 +240,28 @@ L.AnimationSvgMarkerLayerGroup = L.LayerGroup.extend({
 
     removeMarker: function(key) {
         var self = this;
-        //if (this.hasMarker(key)) {
-        var id = this.getLayerIdByKey(key);
-        if (id) {
-            // var id = this.alias[key];
+		// get marker by key
+        var marker = this.getMarker(key);
+        if (marker) {
+			var id = marker._leaflet_id;
             delete this.alias[key];
-			this._layers[id].hideFadeOut();
+            marker.hideFadeOut();
             setTimeout(function(){
 				if (self._layers.hasOwnProperty(id)) {
 					self.queue.enqueue(id);
 				}
             }, 1000);
-
         }
     },
 
     destroyMarker: function(key) {
         var self = this;
-        if (this.hasMarker(key)) {
-            var id = this.alias[key];
+		// get marker by key
+        var marker = this.getMarker(key);
+        if (marker) {
+			var id = marker._leaflet_id;
             delete this.alias[key];
-            this._layers[id].removeFadeOut();
+			marker.removeFadeOut();
             setTimeout(function(){
                 self.removeLayer(id);
             }, 10);
@@ -251,6 +269,7 @@ L.AnimationSvgMarkerLayerGroup = L.LayerGroup.extend({
     },
 
     clearAllMarkers: function() {
+		// clear all markers from map
         this.lock = true;
         for (var i in this.alias) {
             this.removeMarker(i);
@@ -260,20 +279,15 @@ L.AnimationSvgMarkerLayerGroup = L.LayerGroup.extend({
     },
 
     destroyAllMarkers: function() {
-        var self = this
+		// destroy all markers and remove layers
         this.lock = true;
-
 		for (var i in this._layers) {
 			if (this._layers.hasOwnProperty(i)) {
 				this.removeLayer(i);
 			}
 		}
-		
         this.alias = {};
-        setTimeout(function(){
-            self.lock = false;
-        },1250);
-
+        this.lock = false;
     }
 
 });
