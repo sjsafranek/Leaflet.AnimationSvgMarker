@@ -206,9 +206,6 @@ L.AnimationSvgMarkerLayerGroup = L.LayerGroup.extend({
 		if (id) {
 			return this._layers[id];
 		}
-		//if (this.hasMarker(key)) {
-		//	return this._layers[this.alias[key]];
-		//}
 		return null;
     },
 
