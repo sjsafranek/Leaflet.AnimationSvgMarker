@@ -9,6 +9,10 @@ function Queue() {
 Queue.prototype.size = function() {
     return this._newestIndex - this._oldestIndex;
 };
+
+Queue.prototype.isEmpty = function() {
+	return 0 == this.size();
+};
  
 Queue.prototype.enqueue = function(data) {
     this._storage[this._newestIndex] = data;
@@ -37,7 +41,6 @@ L.AnimationSvgMarkerLayerGroup = L.LayerGroup.extend({
         this.alias = {};
         this.queue = new Queue();
         this.updateQueue = new Queue();
-        this.updateQueueInterval;
         this.lock = false;
 		this.show = true;
         this._layers = {};
@@ -52,7 +55,6 @@ L.AnimationSvgMarkerLayerGroup = L.LayerGroup.extend({
         L.LayerGroup.prototype.initialize.call(layers);
 
         this.processUpdateQueue();
-
     },
 
 	onAdd: function (map) {
@@ -70,15 +72,6 @@ L.AnimationSvgMarkerLayerGroup = L.LayerGroup.extend({
 		});
 	},
 
-    // size_layers: function() {
-    //     return Object.keys(this._layers).length;
-    // },
-
-    // size_active: function() {
-    //     return Object.keys(this.alias).length;
-    // },
-
-
     size: function() {
         return {
             "layers": Object.keys(this._layers).length,
@@ -88,21 +81,14 @@ L.AnimationSvgMarkerLayerGroup = L.LayerGroup.extend({
     },
 
     processUpdateQueue: function() {
-        var self = this;
-        self.updateQueueInterval = setInterval(function(){
-			console.log("[DEBUG]: updateQueue ", self.updateQueue.size());
-            if (!self.lock) {
-                if (self.updateQueue.size() != 0) {
-                    var data = self.updateQueue.dequeue();
-                    self.addMarker(data.key,data.latLng,data.options);
-                }
-                else {
-					clearTimeout(self.updateQueueInterval);
-					self.updateQueueInterval = null;
-					return;
-				}
-            }
-        }, 50);
+        if (this.lock) {
+			setTimeout(this.processUpdateQueue, 50);
+			return;
+		}        
+		if (this.updateQueue.size() != 0) {
+			var data = this.updateQueue.dequeue();
+			this.addMarker(data.key, data.latLng, data.options);
+		}
     },
 
     addMarker: function(key, latLng, options) {
@@ -113,17 +99,23 @@ L.AnimationSvgMarkerLayerGroup = L.LayerGroup.extend({
 		}
         
         if (this.lock) {
-            self.updateQueue.enqueue({"key":key, "latLng":latLng, "options":options});
+            self.updateQueue.enqueue({
+				"key": key, 
+				"latLng": latLng, 
+				"options": options
+			});
             self.processUpdateQueue();
             return;
         }
 
-        if (this.alias.hasOwnProperty(key)) {
-            this._layers[id]._icon.classList.remove("markerInvisible");
+		var marker = this.getMarker(key);
+		if(marker) {
+            //marker._icon.classList.remove("markerInvisible");
+            marker.showFadeIn();
             return;
-        }
-
-        else if (0 == this.queue.size()) {
+        } 
+       
+        else if (this.queue.isEmpty()) {
             // create new layer
             var lyr = L.animationsvgmarker(latLng, options);
             var id = this.getLayerId(lyr);
@@ -151,41 +143,78 @@ L.AnimationSvgMarkerLayerGroup = L.LayerGroup.extend({
             this.alias[key] = id;
             return this._layers[this.alias[key]];
 
-        } else {
-            // Grab `id` from queue
-            var id = this.queue.dequeue();
-
-            // Check if layer `id` is valid
-            while (!this._layers.hasOwnProperty(id)) {
-                // If queue is empty create new marker
-                if (0 == this.queue.size()) {
-                    return this.addMarker(key, latLng, options);
-                }
-                // Grab new `id` from queue
-                id = this.queue.dequeue();
-            }
-
+        } 
+        
+        else {
+			// get layer id from quee
+			var id = this.getLayerIdFromQueue();
+			
+			// if `id` is null
+			if (!id) {
+				this.addMarker(key, latLng, options);
+			}
+		
             // assign layer id to lookup table
             this.alias[key] = id;
 
-            // fade marker in
+            // set marker latlng
             this._layers[id].setLatLng(latLng);
             
-            //this._layers[id].addToFadeIn(this._map);
+			// fade marker in
             this._layers[id].showFadeIn();
 
             // return recycled marker
-            return this._layers[this.alias[key]];
+            return this._layers[id];
         }
     },
 
+	getLayerIdFromQueue: function() {
+		// Grab `id` from queue
+		var id = this.queue.dequeue();
+
+		// Check if layer `id` is valid
+		while (!this._layers.hasOwnProperty(id)) {
+			
+			// check if queue is empty
+			if (this.queue.isEmpty()) {
+				return null;
+			}
+			
+			// Grab new `id` from queue
+			id = this.queue.dequeue();
+		}
+
+		return id;
+	},
+
+	hasMarker: function(key) {
+		// Check if layer has allocated marker alias 
+		return this.alias.hasOwnProperty(key);
+	},
+
+	getLayerIdByKey: function(key) {
+		// Get layer_id from key
+		if (this.hasMarker(key)) {
+			return this.alias[key];
+		}
+		return null
+	},
+
     getMarker: function(key) {
-        return this._layers[this.alias[key]];
+		// Get marker from layer
+		var id = this.getLayerIdByKey(key);
+		if (id) {
+			return this._layers[id];
+		}
+		//if (this.hasMarker(key)) {
+		//	return this._layers[this.alias[key]];
+		//}
+		return null;
     },
 
     removeMarker: function(key) {
         var self = this;
-        if (this.alias.hasOwnProperty(key)) {
+        if (this.hasMarker(key)) {
             var id = this.alias[key];
             delete this.alias[key];
 			this._layers[id].hideFadeOut();
@@ -200,7 +229,7 @@ L.AnimationSvgMarkerLayerGroup = L.LayerGroup.extend({
 
     destroyMarker: function(key) {
         var self = this;
-        if (this.alias.hasOwnProperty(key)) {
+        if (this.hasMarker(key)) {
             var id = this.alias[key];
             delete this.alias[key];
             this._layers[id].removeFadeOut();
