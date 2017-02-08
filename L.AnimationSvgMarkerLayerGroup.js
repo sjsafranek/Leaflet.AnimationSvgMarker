@@ -43,6 +43,7 @@ L.AnimationSvgMarkerLayerGroup = L.LayerGroup.extend({
         this.updateQueue = new Queue();
         this.lock = false;
 		this.show = true;
+		this.debug = false;
         this._layers = {};
 
         var i, len;
@@ -250,7 +251,7 @@ L.AnimationSvgMarkerLayerGroup = L.LayerGroup.extend({
 				if (self._layers.hasOwnProperty(id)) {
 					//self.queue.enqueue(id);
 				// control for amount of layers needed
-					console.log(self.size());
+					if (self.debug) { console.log("[DEBUG]:", self.size()); }
 					var size = self.size();
 					if (size.active > size.queue*1.5) {
 						self.queue.enqueue(id);
