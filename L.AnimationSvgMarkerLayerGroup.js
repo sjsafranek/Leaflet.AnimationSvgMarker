@@ -248,7 +248,15 @@ L.AnimationSvgMarkerLayerGroup = L.LayerGroup.extend({
             marker.hideFadeOut();
             setTimeout(function(){
 				if (self._layers.hasOwnProperty(id)) {
-					self.queue.enqueue(id);
+					//self.queue.enqueue(id);
+				// control for amount of layers needed
+					console.log(self.size());
+					var size = self.size();
+					if (size.active > size.queue*1.5) {
+						self.queue.enqueue(id);
+					} else {
+						self.removeLayer(id);
+					}
 				}
             }, 1000);
         }
