@@ -32,6 +32,8 @@ L.AnimationSvgMarker = L.Marker.extend({
         this.path = [];
         this.timeoutLoop = null;
         
+        this.modifier = 0;
+        
         // set default colors
         this.markerIconOptions.color = options.color || "#000000";
         this.circleIconOptions.color = options.color || "#000000";
@@ -114,6 +116,9 @@ L.AnimationSvgMarker = L.Marker.extend({
 
         if (self.path.length > 0) {
             var point = self.path.shift();
+        // DEBUGGING
+            point.duration += self.modifier;
+        //.end DEBUGGING
             // removed from map
 			if (!self._map){return;}
             var pt1 = self._map.latLngToLayerPoint(point.location);
@@ -150,6 +155,7 @@ L.AnimationSvgMarker = L.Marker.extend({
                 window.clearTimeout(self.timeoutLoop);
                 self.timeoutLoop = null;
                 self.animate();
+            //}, point.duration);
             }, point.duration);
         } else {
             window.clearTimeout(self.timeoutLoop);
@@ -298,8 +304,10 @@ L.AnimationSvgMarker = L.Marker.extend({
 					self.closePopup();
 				}
 			}
-			self._icon.classList.remove("markerFadeOut");
-			self._icon.classList.add("markerInvisible");
+			if (self._icon) {
+				self._icon.classList.remove("markerFadeOut");
+				self._icon.classList.add("markerInvisible");
+			}
 			window.clearTimeout(self.timeoutLoop);
 			self.timeoutLoop = null;
 			self.path = [];
@@ -322,7 +330,10 @@ L.AnimationSvgMarker = L.Marker.extend({
 		this._icon.getElementsByTagName("span")[0].classList.add("markerFadeIn");
 		this._icon.getElementsByTagName("span")[0].classList.remove("markerInvisible");
         setTimeout(function(){
-			self._icon.getElementsByTagName("span")[0].classList.remove("markerFadeIn");
+			//if (self.hasOwnProperty("_icon")) {
+			if (self._icon) {
+				self._icon.getElementsByTagName("span")[0].classList.remove("markerFadeIn");
+			}
         }, duration);
 	},
 	
@@ -334,8 +345,10 @@ L.AnimationSvgMarker = L.Marker.extend({
 		var duration = milliseconds || 1000;
 		this._icon.getElementsByTagName("span")[0].classList.add("markerFadeOut");
 		setTimeout(function(){
-			self._icon.getElementsByTagName("span")[0].classList.add("markerInvisible");
-			self._icon.getElementsByTagName("span")[0].classList.remove("markerFadeOut");
+			if (self._icon) {
+				self._icon.getElementsByTagName("span")[0].classList.add("markerInvisible");
+				self._icon.getElementsByTagName("span")[0].classList.remove("markerFadeOut");
+			}
 		}, duration);
 	},
 
