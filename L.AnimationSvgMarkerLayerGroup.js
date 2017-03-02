@@ -150,12 +150,20 @@ L.AnimationSvgMarkerLayerGroup = L.LayerGroup.extend({
 		
             // assign layer id to lookup table
             this.alias[key] = id;
-
+            
             // set marker latlng
+            this._layers[id].resetTransformation();
             this._layers[id].setLatLng(latLng);
             
 			// fade marker in
-            this._layers[id].showFadeIn();
+			//function markerFadeIn() {
+			//	self._layers[id].showFadeIn(150);
+			//}
+            this._layers[id].showFadeIn(500);
+			//setTimeout(function(){
+			//	self._layers[id].showFadeIn(250);
+			//}, 500);
+			//setTimeout(markerFadeIn, 500);
 
             // return recycled marker
             return this._layers[id];
@@ -246,11 +254,14 @@ L.AnimationSvgMarkerLayerGroup = L.LayerGroup.extend({
         if (marker) {
 			var id = marker._leaflet_id;
             delete this.alias[key];
-            marker.hideFadeOut();
+            marker.hideFadeOut(750);
+            // clear marker path
+            marker.path = [];
+            // set timeout
             setTimeout(function(){
 				if (self._layers.hasOwnProperty(id)) {
+				// Control for amount of layers needed
 					//self.queue.enqueue(id);
-				// control for amount of layers needed
 					if (self.debug) { console.log(new Date().toISOString(), "[DEBUG]:", self.size()); }
 					var size = self.size();
 					if (size.active > size.queue*1.5) {
@@ -259,7 +270,7 @@ L.AnimationSvgMarkerLayerGroup = L.LayerGroup.extend({
 						self.removeLayer(id);
 					}
 				}
-            }, 1000);
+            }, 1250);
         }
     },
 

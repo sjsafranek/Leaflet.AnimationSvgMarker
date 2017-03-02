@@ -55,7 +55,6 @@ L.AnimationSvgMarker = L.Marker.extend({
 
         this.on("click",function(){
             var self = this;
-            console.log("click");
             function fadeOutClosePopup() {
                 clearTimeout(self._popup.fadeTimeout);
                 self._popup.fadeTimeout = setTimeout(function() {
@@ -107,6 +106,17 @@ L.AnimationSvgMarker = L.Marker.extend({
         }
     },
 
+	resetTransformation: function() {
+		if (this._icon) {
+			this._icon.style.transition = "transform 0s";
+		}
+		if (this.hasOwnProperty("_popup")) {
+			if (this._popup.hasOwnProperty("_container")) {
+				this._popup._container.style.transition = "transform 0s";
+			}
+		}
+	},
+
     animate: function() {
         var self = this;
 
@@ -144,6 +154,7 @@ L.AnimationSvgMarker = L.Marker.extend({
             }
 
             self.timeoutLoop = setTimeout(function(){
+                /*
                 if (self._icon) {
                     self._icon.style.transition = "transform 0s";
                 }
@@ -152,6 +163,8 @@ L.AnimationSvgMarker = L.Marker.extend({
                         self._popup._container.style.transition = "transform 0s";
                     }
                 }
+                */
+                self.resetTransformation();
                 window.clearTimeout(self.timeoutLoop);
                 self.timeoutLoop = null;
                 self.animate();
@@ -315,13 +328,17 @@ L.AnimationSvgMarker = L.Marker.extend({
 	},
 
 	setlabelContent: function(text) {
-		if (text != this._icon.getElementsByTagName("span")[0].innerText) {
-			this._icon.getElementsByTagName("span")[0].innerText = text;
+		//if (text != this._icon.getElementsByTagName("span")[0].innerText) {
+		//	this._icon.getElementsByTagName("span")[0].innerText = text;
+		//}
+		if (text != this._icon.getElementsByTagName("span")[0].innerHTML) {
+			this._icon.getElementsByTagName("span")[0].innerHTML = text;
 		}
 	},
 	
 	showLabel: function(milliseconds) {
-		if ( -1 == this._icon.getElementsByTagName("span")[0].classList.value.indexOf("markerInvisible") ) {
+		//if ( -1 == this._icon.getElementsByTagName("span")[0].classList.value.indexOf("markerInvisible") ) {
+		if (!this._icon.getElementsByTagName("span")[0].classList.contains("markerInvisible")) {
 			return;
 		}
 		var self = this;
@@ -338,7 +355,8 @@ L.AnimationSvgMarker = L.Marker.extend({
 	},
 	
 	hideLabel: function(milliseconds) {
-		if ( -1 != this._icon.getElementsByTagName("span")[0].classList.value.indexOf("markerInvisible") ) {
+		//if ( -1 != this._icon.getElementsByTagName("span")[0].classList.value.indexOf("markerInvisible") ) {
+		if (this._icon.getElementsByTagName("span")[0].classList.contains("markerInvisible")) {
 			return;
 		}
 		var self = this;
