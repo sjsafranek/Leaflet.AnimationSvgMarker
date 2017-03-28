@@ -65,6 +65,8 @@ L.AnimationSvgMarkerLayerGroup = L.LayerGroup.extend({
 		var self = this;
 		this._map.on('popupopen', function (e) {
 			var source = e.popup._source;
+			if (!source) {return;}
+			if (!source.hasOwnProperty('_leaflet_id')) {return;}
 			if (self._layers.hasOwnProperty(source._leaflet_id)) {
 				source._popup.setContent( 
 					source._getPopupHtml() 
@@ -87,6 +89,7 @@ L.AnimationSvgMarkerLayerGroup = L.LayerGroup.extend({
     },
 
     processUpdateQueue: function() {
+		console.log(new Date().toISOString(), "[DEBUG]: processUpdateQueue");
         if (this.lock) {
 			setTimeout(this.processUpdateQueue, 50);
 			return;
@@ -178,7 +181,7 @@ L.AnimationSvgMarkerLayerGroup = L.LayerGroup.extend({
 
         // on map remove listener
         lyr.on("remove", function(event) {
-            self.lock = true;
+            //self.lock = true;
             
             // get layer leaflet_id
             var id = this._leaflet_id;
@@ -191,10 +194,11 @@ L.AnimationSvgMarkerLayerGroup = L.LayerGroup.extend({
             for (var i in self.alias) {
                 if (self.alias[i] == id) {
                     delete self.alias[i];
+                    break;
                 }
             }
             
-            self.lock = false;
+            //self.lock = false;
         });
 
         return lyr

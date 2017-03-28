@@ -116,3 +116,11 @@
 }
 
 
+.leaflet-popup-content {
+	/*
+		width: auto !important;
+	*/
+	max-width: 400px;
+}
+
+
