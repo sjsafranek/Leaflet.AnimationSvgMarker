@@ -5,7 +5,7 @@ function Queue() {
     this._newestIndex = 1;
     this._storage = {};
 }
- 
+
 Queue.prototype.size = function() {
     return this._newestIndex - this._oldestIndex;
 };
@@ -13,27 +13,27 @@ Queue.prototype.size = function() {
 Queue.prototype.isEmpty = function() {
 	return 0 == this.size();
 };
- 
+
 Queue.prototype.enqueue = function(data) {
     this._storage[this._newestIndex] = data;
     this._newestIndex++;
 };
- 
+
 Queue.prototype.dequeue = function() {
     var oldestIndex = this._oldestIndex,
         newestIndex = this._newestIndex,
         deletedData;
- 
+
     if (oldestIndex !== newestIndex) {
         deletedData = this._storage[oldestIndex];
         delete this._storage[oldestIndex];
         this._oldestIndex++;
- 
+
         return deletedData;
     }
 };
 
-// 
+//
 L.AnimationSvgMarkerLayerGroup = L.LayerGroup.extend({
 
     initialize: function (layers) {
@@ -61,15 +61,15 @@ L.AnimationSvgMarkerLayerGroup = L.LayerGroup.extend({
 	onAdd: function (map) {
 		this._map = map;
 		this.eachLayer(map.addLayer, map);
-		
+
 		var self = this;
 		this._map.on('popupopen', function (e) {
 			var source = e.popup._source;
 			if (!source) {return;}
 			if (!source.hasOwnProperty('_leaflet_id')) {return;}
 			if (self._layers.hasOwnProperty(source._leaflet_id)) {
-				source._popup.setContent( 
-					source._getPopupHtml() 
+				source._popup.setContent(
+					source._getPopupHtml()
 				);
 			}
 		});
@@ -93,7 +93,7 @@ L.AnimationSvgMarkerLayerGroup = L.LayerGroup.extend({
         if (this.lock) {
 			setTimeout(this.processUpdateQueue, 50);
 			return;
-		}        
+		}
 		if (this.updateQueue.size() != 0) {
 			var data = this.updateQueue.dequeue();
 			this.addMarker(data.key, data.latLng, data.options);
@@ -102,15 +102,15 @@ L.AnimationSvgMarkerLayerGroup = L.LayerGroup.extend({
 
     addMarker: function(key, latLng, options) {
         var self = this;
-        
+
         if (!this.show) {
 			return;
 		}
-        
+
         if (this.lock) {
             self.updateQueue.enqueue({
-				"key": key, 
-				"latLng": latLng, 
+				"key": key,
+				"latLng": latLng,
 				"options": options
 			});
             self.processUpdateQueue();
@@ -121,8 +121,8 @@ L.AnimationSvgMarkerLayerGroup = L.LayerGroup.extend({
 		if (marker) {
             marker.showFadeIn();
             return marker;
-        } 
-       
+        }
+
         else if (this.queue.isEmpty()) {
             // create new marker
             var marker = this.newMarker(latLng, options);
@@ -140,24 +140,24 @@ L.AnimationSvgMarkerLayerGroup = L.LayerGroup.extend({
             this.alias[key] = id;
 
             return marker;
-        } 
-        
+        }
+
         else {
 			// get layer id from quee
 			var id = this.getLayerIdFromQueue();
-			
+
 			// if `id` is null
 			if (!id) {
 				return this.addMarker(key, latLng, options);
 			}
-		
+
             // assign layer id to lookup table
             this.alias[key] = id;
-            
+
             // set marker latlng
             this._layers[id].resetTransformation();
             this._layers[id].setLatLng(latLng);
-            
+
 			// fade marker in
 			//function markerFadeIn() {
 			//	self._layers[id].showFadeIn(150);
@@ -182,14 +182,14 @@ L.AnimationSvgMarkerLayerGroup = L.LayerGroup.extend({
         // on map remove listener
         lyr.on("remove", function(event) {
             //self.lock = true;
-            
+
             // get layer leaflet_id
             var id = this._leaflet_id;
-            
+
             // remove marker layer from group
             try { self.removeLayer(this); }
             catch(err){ delete self._layers[id]; }
-            
+
             // clean layer id from alias lookup table
             for (var i in self.alias) {
                 if (self.alias[i] == id) {
@@ -197,7 +197,7 @@ L.AnimationSvgMarkerLayerGroup = L.LayerGroup.extend({
                     break;
                 }
             }
-            
+
             //self.lock = false;
         });
 
@@ -210,12 +210,12 @@ L.AnimationSvgMarkerLayerGroup = L.LayerGroup.extend({
 
 		// Check if layer `id` is valid
 		while (!this._layers.hasOwnProperty(id)) {
-			
+
 			// check if queue is empty
 			if (this.queue.isEmpty()) {
 				return null;
 			}
-			
+
 			// Grab new `id` from queue
 			id = this.queue.dequeue();
 		}
@@ -230,7 +230,7 @@ L.AnimationSvgMarkerLayerGroup = L.LayerGroup.extend({
 	},
 
 	hasMarker: function(key) {
-		// Check if layer has allocated marker alias 
+		// Check if layer has allocated marker alias
 		return this.alias.hasOwnProperty(key);
 	},
 
@@ -315,4 +315,3 @@ L.AnimationSvgMarkerLayerGroup = L.LayerGroup.extend({
     }
 
 });
-

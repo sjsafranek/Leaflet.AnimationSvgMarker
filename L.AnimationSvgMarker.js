@@ -8,12 +8,18 @@ L.AnimationSvgMarker = L.Marker.extend({
     },
 
     markerIconOptions: {
-        iconAnchor: [12, 24],
-        iconSize: [22, 35],
-        shadowAnchor: [18, 46],
-        shadowSize: [54, 51],
+        // iconAnchor: [12, 24],
+        // iconSize: [22, 35],
+
+        // iconAnchor: [16, 34],
+        iconAnchor: [16, 30],
+        iconSize: [34, 35],
+
+        // shadowAnchor: [18, 46],
+        // shadowSize: [54, 51],
         popupAnchor: [0, -17],
-        viewBox: '0 0 32 52',
+        // viewBox: '0 0 32 52',
+        viewBox: '2 -6 32 52',
         color: "#000000",
         symbol: 'M16,1 C7,1 1,7 1,15 C1,24 16,40 16,40 C16,40 31,24 31,15 C31,7 24,1 16,1 L16,1 Z'
     },
@@ -31,9 +37,9 @@ L.AnimationSvgMarker = L.Marker.extend({
         L.Util.setOptions(this, options);
         this.path = [];
         this.timeoutLoop = null;
-        
+
         this.modifier = 0;
-        
+
         // set default colors
         this.markerIconOptions.color = options.color || "#000000";
         this.circleIconOptions.color = options.color || "#000000";
@@ -121,8 +127,8 @@ L.AnimationSvgMarker = L.Marker.extend({
         var self = this;
 
         // TESTING
-        //this.animate_path();
-        //return;
+        // this.animate_path();
+        // return;
 
         if (self.path.length > 0) {
             var point = self.path.shift();
@@ -136,13 +142,13 @@ L.AnimationSvgMarker = L.Marker.extend({
             var seconds = point.duration/1000;
             self._icon.style.transition = "transform "+seconds+"s "+this.options.transition_timing;
             self._icon.style.transform = "translate3d(" + pt1.x + "px, " + pt1.y + "px, 0px)";
-            // popup 
+            // popup
             if (self.hasOwnProperty("_popup")) {
                 if (self._popup.hasOwnProperty("_container") ) {
                     var isHover = false;
                     for (var i=0; i < self._popup._container.classList.length; i++) {
-                        if (self._popup._container.classList[i] == "hover") { 
-                            isHover=true; 
+                        if (self._popup._container.classList[i] == "hover") {
+                            isHover=true;
                         }
                     };
                     if (!isHover) {
@@ -191,9 +197,9 @@ L.AnimationSvgMarker = L.Marker.extend({
             // https://groups.google.com/forum/#!topic/leaflet-js/GSisdUm5rEc
             // https://github.com/hiasinho/Leaflet.vector-markers/blob/master/dist/leaflet-vector-markers.js
             // here's the SVG for the marker
-            var icon = '<svg class="symbol shadow" width="' + this.markerIconOptions.iconSize[0] + 'px" height="' + this.markerIconOptions.iconSize[1] + 'px" viewBox="' + this.markerIconOptions.viewBox + '" version="1.1" ' 
+            var icon = '<svg class="symbol shadow" width="' + this.markerIconOptions.iconSize[0] + 'px" height="' + this.markerIconOptions.iconSize[1] + 'px" viewBox="' + this.markerIconOptions.viewBox + '" version="1.1" '
                      + 'xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">'
-                     + '<path d="' + this.markerIconOptions.symbol + '" fill="' + this.markerIconOptions.color + '" stroke="' + this.markerIconOptions.color + '" fill-opacity="0.65" stroke-width="3"></path></svg>';            
+                     + '<path d="' + this.markerIconOptions.symbol + '" fill="' + this.markerIconOptions.color + '" stroke="' + this.markerIconOptions.color + '" fill-opacity="0.65" stroke-width="3"></path></svg>';
             //this.markerIconOptions.html = icon;
             this.markerIconOptions.html = icon + '<span class="markerLabel markerInvisible"></span>';
             this.markerIconOptions.className = 'svgIcon';
@@ -202,7 +208,7 @@ L.AnimationSvgMarker = L.Marker.extend({
         }
 
         if ("circle" == this.options.type) {
-            icon = '<svg class="symbol shadow" width="' + this.circleIconOptions.iconSize[0] + 'px" height="' + this.circleIconOptions.iconSize[1] + 'px" viewBox="' + this.circleIconOptions.viewBox + '" version="1.1" ' 
+            icon = '<svg class="symbol shadow" width="' + this.circleIconOptions.iconSize[0] + 'px" height="' + this.circleIconOptions.iconSize[1] + 'px" viewBox="' + this.circleIconOptions.viewBox + '" version="1.1" '
                  + 'xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">'
                  + '<circle cx="25" cy="25" r="'+this.circleIconOptions.radius+'" stroke="'+this.circleIconOptions.color+'" stroke-width="3" fill="'+this.circleIconOptions.color+'" fill-opacity="0.65" /></svg>';
             var svgURL = "data:image/svg+xml;base64," + btoa(icon);
@@ -335,7 +341,7 @@ L.AnimationSvgMarker = L.Marker.extend({
 			this._icon.getElementsByTagName("span")[0].innerHTML = text;
 		}
 	},
-	
+
 	showLabel: function(milliseconds) {
 		//if ( -1 == this._icon.getElementsByTagName("span")[0].classList.value.indexOf("markerInvisible") ) {
 		if (!this._icon.getElementsByTagName("span")[0].classList.contains("markerInvisible")) {
@@ -353,7 +359,7 @@ L.AnimationSvgMarker = L.Marker.extend({
 			}
         }, duration);
 	},
-	
+
 	hideLabel: function(milliseconds) {
 		//if ( -1 != this._icon.getElementsByTagName("span")[0].classList.value.indexOf("markerInvisible") ) {
 		if (this._icon.getElementsByTagName("span")[0].classList.contains("markerInvisible")) {
@@ -415,13 +421,13 @@ L.AnimationSvgMarker = L.Marker.extend({
             self._icon.style.animation = 'AnimationSvgMarker_'+this._leaflet_id+' '+total_runtime+'s 1';  // this.options.transition_timing
 
 /*
-            // popup 
+            // popup
             if (self.hasOwnProperty("_popup")) {
                 if (self._popup.hasOwnProperty("_container") ) {
                     var isHover = false;
                     for (var i=0; i < self._popup._container.classList.length; i++) {
-                        if (self._popup._container.classList[i] == "hover") { 
-                            isHover=true; 
+                        if (self._popup._container.classList[i] == "hover") {
+                            isHover=true;
                         }
                     };
                     if (!isHover) {
